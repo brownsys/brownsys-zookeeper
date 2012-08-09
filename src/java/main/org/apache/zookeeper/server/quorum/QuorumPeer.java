@@ -52,6 +52,13 @@ import org.apache.zookeeper.server.util.ZxidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
+import java.util.LinkedList;
+import java.util.Map.Entry;
+import java.util.Iterator;
+import java.net.UnknownHostException;
+import paneclient.*;
+
 /**
  * This class manages the quorum protocol. There are three states this server
  * can be in:
@@ -795,6 +802,18 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
         return null;
     }
 
+    /*****************************************************/
+    InetAddress _paneAddress;
+    int _panePort = 4242;
+    int _paneResvSec = 60;
+    double _remainingTime = 0;
+    PaneClientImpl _client;
+    PaneShare _root; 
+    int port1 = 2881;
+    int port2 = 3881;
+    int clientport = 2181;
+    /*****************************************************/
+    
     @Override
     public void run() {
         setName("QuorumPeer" + "[myid=" + getId() + "]" +
@@ -832,6 +851,32 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
             /*
              * Main loop
              */
+             
+            /*************************************************************/
+            try {
+                _paneAddress = InetAddress.getLocalHost();//only for test on local machine, need to change to real pane address
+                _client = new PaneClientImpl(_paneAddress, _panePort);
+                _root = _client.getRootShare();
+                _client.authenticate("root");
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+
+            Map<Long, QuorumServer> quorumPeers = getQuorumVerifier().getAllMembers();
+            LinkedList<InetAddress> others = new LinkedList<InetAddress>();   
+            Iterator<Entry<Long, QuorumServer>> it = quorumPeers.entrySet().iterator();
+            while(it.hasNext()) {
+                Entry<Long, QuorumServer> entry = it.next();
+                Long id = entry.getKey();
+                if(id == myid) {
+                    //self is not going to be added
+                    continue;
+                }
+                InetAddress address = entry.getValue().addr.getAddress();
+                others.add(address);
+            }       
+            /*************************************************************/
+            
             while (running) {
                 switch (getPeerState()) {
                 case LOOKING:
@@ -903,10 +948,18 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
                     try {
                         LOG.info("FOLLOWING");
                         setFollower(makeFollower(logFactory));
+                        /*******************************************************************/
+                        QuorumServer me = quorumPeers.get(myid);
+                        follower.initializePane(_client, _root, me.addr.getAddress(), port1, port2, clientport, _paneResvSec, others);
+                        follower.setTimeout(_remainingTime);
+                        /*******************************************************************/
                         follower.followLeader();
                     } catch (Exception e) {
                         LOG.warn("Unexpected exception",e);
-                    } finally {
+                    } finally {                    
+                        /*******************************************************************/
+                        _remainingTime = follower.getRemainingTime();
+                        /*******************************************************************/                    
                         follower.shutdown();
                         setFollower(null);
                         setPeerState(ServerState.LOOKING);
@@ -916,11 +969,19 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
                     LOG.info("LEADING");
                     try {
                         setLeader(makeLeader(logFactory));
+                        /*******************************************************************/
+                        QuorumServer me = quorumPeers.get(myid);
+                        leader.initializePane(_client, _root, me.addr.getAddress(), port1, port2, clientport, _paneResvSec, others);
+                        leader.setTimeout(_remainingTime);
+                        /*******************************************************************/
                         leader.lead();
                         setLeader(null);
                     } catch (Exception e) {
                         LOG.warn("Unexpected exception",e);
                     } finally {
+                        /*******************************************************************/
+                         _remainingTime = leader.getRemainingTime();
+                        /*******************************************************************/
                         if (leader != null) {
                             leader.shutdown("Forcing shutdown");
                             setLeader(null);

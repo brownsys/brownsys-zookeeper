@@ -47,6 +47,11 @@ import org.apache.zookeeper.server.util.ZxidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
+import java.util.LinkedList;
+
+import paneclient.*;
+
 /**
  * This class has the control logic for the Leader.
  */
@@ -333,6 +338,24 @@ public class Leader {
     long epoch = -1;
     boolean waitingForNewEpoch = true;
 
+    /****************************************************************/
+    PaneHelper _paneHelper;
+    
+    public void initializePane(PaneClient client, PaneShare root, InetAddress myIP, 
+         int port1, int port2, int clientPort, int paneResvSec, LinkedList<InetAddress> peers) {
+        _paneHelper = new PaneHelper();
+        _paneHelper.set(client, root, myIP, port1, port2, clientPort, paneResvSec, peers);
+    }
+
+    public void setTimeout(double timeout) {
+        _paneHelper.setTimeout(timeout);
+    }
+
+    public double getRemainingTime() {
+       return _paneHelper.getRemainingTime();
+    }
+    /****************************************************************/
+    
     /**
      * This method is main function that is called to lead
      *
@@ -446,8 +469,37 @@ public class Leader {
             // iteration
             boolean tickSkip = true;
 
+            /****************************************/
+            double now = System.nanoTime();
+            _paneHelper.setLastTime(now);
+            _paneHelper.setCurrentTime(now);
+            boolean firstTime = true; 
+            double timeout;  
+            /****************************************/
+            
             while (true) {
                 Thread.sleep(self.tickTime / 2);
+                
+                /****************************************/
+                _paneHelper.setCurrentTime(System.nanoTime());
+                if(firstTime == true)
+                    timeout = _paneHelper.getTimeout();
+                else
+                    timeout = _paneHelper.getPaneResvSec();
+
+                if((_paneHelper.getCurrentTime() - _paneHelper.getLastTime())/1000000000 >= timeout){
+                	try{
+                		_paneHelper.makeReservationOnAll();
+                        } catch (IOException e) {
+   				e.printStackTrace();
+   			} catch (PaneException.InvalidResvException e) {
+                                e.printStackTrace();
+                        }      			
+			_paneHelper.setLastTime(_paneHelper.getCurrentTime());     	
+                }
+                firstTime = false;
+                /***************************************/
+                
                 if (!tickSkip) {
                     self.tick++;
                 }

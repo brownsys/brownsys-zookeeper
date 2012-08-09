@@ -26,6 +26,11 @@ import org.apache.zookeeper.server.util.SerializeUtils;
 import org.apache.zookeeper.server.util.ZxidUtils;
 import org.apache.zookeeper.txn.TxnHeader;
 
+import java.net.InetAddress;
+import java.util.LinkedList;
+
+import paneclient.*;
+
 /**
  * This class has the control logic for the Follower.
  */
@@ -51,6 +56,24 @@ public class Follower extends Learner{
         return sb.toString();
     }
 
+    /****************************************************************/
+    PaneHelper _paneHelper;
+    
+    public void initializePane(PaneClient client, PaneShare root, InetAddress myIP, 
+         int port1, int port2, int clientPort, int paneResvSec, LinkedList<InetAddress> peers) {
+        _paneHelper = new PaneHelper();
+        _paneHelper.set(client, root, myIP, port1, port2, clientPort, paneResvSec, peers);
+    }
+
+    public void setTimeout(double timeout) {
+        _paneHelper.setTimeout(timeout);
+    }
+
+    public double getRemainingTime() {
+       return _paneHelper.getRemainingTime();
+    }
+    /****************************************************************/
+    
     /**
      * the main method called by the follower to follow the leader
      *
@@ -79,7 +102,37 @@ public class Follower extends Learner{
                 }
                 syncWithLeader(newEpochZxid);                
                 QuorumPacket qp = new QuorumPacket();
+                
+                /****************************************/
+                double now = System.nanoTime();
+                _paneHelper.setLastTime(now);
+                _paneHelper.setCurrentTime(now);
+                boolean firstTime = true; 
+                double timeout;               
+                /****************************************/
+                
                 while (self.isRunning()) {
+                
+                     /****************************************/
+                     _paneHelper.setCurrentTime(System.nanoTime());
+                     if(firstTime == true)
+                     	timeout = _paneHelper.getTimeout();
+                     else
+                     	timeout = _paneHelper.getPaneResvSec();
+
+                     if((_paneHelper.getCurrentTime() - _paneHelper.getLastTime())/1000000000 >= timeout){
+                        try{
+               			_paneHelper.makeReservationOnAll();
+                        } catch (IOException e) {
+   				e.printStackTrace();
+   			} catch (PaneException.InvalidResvException e) {
+                                e.printStackTrace();
+                        }   			
+   			_paneHelper.setLastTime(_paneHelper.getCurrentTime());             	
+   	            }
+   	            firstTime = false;
+   	            /***************************************/
+   	            
                     readPacket(qp);
                     processPacket(qp);
                 }
