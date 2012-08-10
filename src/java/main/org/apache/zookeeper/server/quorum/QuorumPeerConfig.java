@@ -44,7 +44,6 @@ import org.apache.zookeeper.server.quorum.flexible.QuorumMaj;
 import org.apache.zookeeper.server.quorum.flexible.QuorumVerifier;
 import org.apache.zookeeper.server.util.VerifyingFileFactory;
 
-
 public class QuorumPeerConfig {
     private static final Logger LOG = LoggerFactory.getLogger(QuorumPeerConfig.class);
 
@@ -73,6 +72,15 @@ public class QuorumPeerConfig {
     protected int purgeInterval = 0;
 
     protected LearnerType peerType = LearnerType.PARTICIPANT;
+    
+    
+    /***********************************************/
+    protected InetAddress paneAddress;
+    protected int panePort = 4242;
+    protected int paneResvSec = 60;
+    protected int paneBandwidth = 10;
+    protected int clientPort = 0;
+    /***********************************************/
 
     /**
      * Minimum snapshot retain count.
@@ -202,6 +210,14 @@ public class QuorumPeerConfig {
                 purgeInterval = Integer.parseInt(value);
             } else if ((key.startsWith("server.") || key.startsWith("group") || key.startsWith("weight")) && zkProp.entrySet().contains("dynamicConfigFile")){                
                throw new ConfigException("parameter: " + key + " must be in a separate dynamic config file");
+            } else if (key.equals("paneAddress")) {
+                paneAddress = InetAddress.getByName(value);
+            } else if (key.equals("panePort")) {
+                panePort = Integer.parseInt(value);
+            } else if (key.equals("paneResvSec")) {
+                paneResvSec = Integer.parseInt(value);
+            } else if (key.equals("paneBandwidth")) {
+                paneBandwidth = Integer.parseInt(value);
             } else {
                 System.setProperty("zookeeper." + key, value);
             }
@@ -475,6 +491,14 @@ public class QuorumPeerConfig {
     public int getSyncLimit() { return syncLimit; }
     public int getElectionAlg() { return electionAlg; }
     public int getElectionPort() { return electionPort; }    
+    
+    /***************************************************************/
+    public InetAddress getPaneAddress() { return paneAddress; }
+    public int getPanePort() { return panePort; }
+    public int getPaneResvSec() { return paneResvSec; }
+    public int getPaneBandwidth() { return paneBandwidth; }
+    public int getClientPort() { return clientPort; }
+    /***************************************************************/
     
     public int getSnapRetainCount() {
         return snapRetainCount;

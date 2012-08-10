@@ -153,6 +153,13 @@ public class QuorumPeerMain {
           quorumPeer.setQuorumVerifier(config.getQuorumVerifier(), false);
           quorumPeer.setCnxnFactory(cnxnFactory);
           quorumPeer.setLearnerType(config.getPeerType());
+          /********************************************************/
+          quorumPeer.setPaneAddress(config.getPaneAddress());
+          quorumPeer.setPanePort(config.getPanePort());
+          quorumPeer.setPaneResvSec(config.getPaneResvSec());
+          quorumPeer.setPaneBandwidth(config.getPaneBandwidth());
+          quorumPeer.setClientPort(config.getClientPort());
+          /********************************************************/
           
           quorumPeer.start();
           quorumPeer.join();

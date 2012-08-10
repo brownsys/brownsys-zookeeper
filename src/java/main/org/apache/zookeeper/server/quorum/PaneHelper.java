@@ -11,9 +11,10 @@ public class PaneHelper {
     PaneShare _root;
     InetAddress _myIP;
     int _paneResvSec;
-    int _port1;
-    int _port2;
+    int _quorumPort;
+    int _electionPort;
     int _clientPort;
+    int _bandwidth;
     double _lastTime;
     double _currentTime;
     double _timeout;
@@ -54,15 +55,16 @@ public class PaneHelper {
     }
 
     public void set(PaneClient client, PaneShare root, InetAddress myIP, 
-         int port1, int port2, int clientPort, int paneResvSec, LinkedList<InetAddress> peers) {
+         int quorumPort, int electionPort, int clientPort, int paneResvSec, LinkedList<InetAddress> peers, int bandwidth) {
         _client = client;
         _root = root;
     	_myIP = myIP;
-    	_port1 = port1;  
-    	_port2 = port2;
+    	_quorumPort = quorumPort;  
+    	_electionPort = electionPort;
     	_clientPort = clientPort;
     	_paneResvSec = paneResvSec; 
-        _peers = peers; 	
+        _peers = peers; 
+        _bandwidth = bandwidth;	
     }
 
     public void makeReservationOnAll() throws PaneException.InvalidResvException, IOException {
@@ -79,22 +81,32 @@ public class PaneHelper {
 
         start.setRelativeTime(0);
         end.setRelativeTime(_paneResvSec);
+        
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
-        fg.setSrcPort(_port1);
-        resv = new PaneReservation(10, fg, start, end);
+        fg.setSrcPort(_quorumPort);
+        resv = new PaneReservation(_bandwidth, fg, start, end);
         _root.reserve(resv);
 
-        fg.setDstPort(_port1);
-        resv = new PaneReservation(10, fg, start, end);
+        fg = new PaneFlowGroup();
+        fg.setDstHost(_myIP);
+        fg.setSrcHost(srcHost);
+        fg.setDstPort(_quorumPort);
+        resv = new PaneReservation(_bandwidth, fg, start, end);
         _root.reserve(resv);
         
-        fg.setSrcPort(_port2);
-        resv = new PaneReservation(10, fg, start, end);
+        fg = new PaneFlowGroup();
+        fg.setDstHost(_myIP);
+        fg.setSrcHost(srcHost);
+        fg.setSrcPort(_clientPort);
+        resv = new PaneReservation(_bandwidth, fg, start, end);
         _root.reserve(resv);
 
-        fg.setDstPort(_port2);
-        resv = new PaneReservation(10, fg, start, end);
+        fg = new PaneFlowGroup();
+        fg.setDstHost(_myIP);
+        fg.setSrcHost(srcHost);
+        fg.setDstPort(_clientPort);
+        resv = new PaneReservation(_bandwidth, fg, start, end);
         _root.reserve(resv);        
 
     }
