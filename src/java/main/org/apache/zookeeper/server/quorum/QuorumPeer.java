@@ -59,8 +59,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.net.UnknownHostException;
 
-import paneclient.*;
-import java.net.Socket;
 
 /**
  * This class manages the quorum protocol. There are three states this server
@@ -540,112 +538,6 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
 
     private final QuorumStats quorumStats;
 
-    /***********************************************************/
-    public class PaneSpeaker implements Runnable {
-	
-	int _paneResvSec;
-	int _quorumPort;
-	int _electionPort;
-	int _clientPort;
-	InetAddress _paneAddress;
-	int _panePort;
-	PaneClientImpl _client;
-	PaneShare _share;
-	PaneHelper _helper;
-
-	boolean _running;
-	
-	PaneSpeaker(int quorumPort, int electionPort, int clientPort, int paneResvSec, InetAddress paneAddress, int panePort) {
-	    _paneResvSec = paneResvSec;
-	    _quorumPort = quorumPort;
-	    _clientPort = clientPort;
-	    _electionPort = electionPort;
-	    _paneAddress = paneAddress;
-	    _panePort = panePort;
-	}
-	
-	void begin() {
-		_running = true;
-	}
-	
-	void end() {
-		_running = false;
-	}
-	@Override
-	public void run() {
-            try {
-                
-                _client = new PaneClientImpl(_paneAddress, _panePort);
-                _share = _client.getRootShare();
-                _client.authenticate("root");
-            
-                Map<Long, QuorumServer> quorumPeers = getQuorumVerifier().getAllMembers();
-                InetAddress myIP = quorumPeers.get(myid).addr.getAddress();
-                LinkedList<InetAddress> others = new LinkedList<InetAddress>();
-                Iterator<Entry<Long, QuorumServer>> it = quorumPeers.entrySet().iterator();
-            
-                _helper = new PaneHelper();
-                _helper.set(_client, _share, myIP, _quorumPort, _electionPort, _clientPort, _paneResvSec, others, _bandwidth);
-                
-               
-            
-                while(it.hasNext()) {
-                	Entry<Long, QuorumServer> entry = it.next();
-                	Long id = entry.getKey();
-                	if (id == myid) {
-                		continue;
-                	}
-                	InetAddress address = entry.getValue().addr.getAddress();
-                	others.add(address);
-                }
-                //initialization finished
-                
-                while(_running) {            
-                    _helper.makeReservationOnAll();
-                    LOG.info("making reservatio for peer port:" + _quorumPort + " and election port:" + _electionPort +
-                     " and client port: " + _clientPort + " pane address:" + _paneAddress.getHostAddress() + "and pane port:" + _panePort);				
-        	    try {
-        	        Thread.sleep(_paneResvSec);
-        	    } catch(InterruptedException e) {
-        	        e.printStackTrace();
-        	    }
-                }            
-            } catch(Exception e) {
-                e.printStackTrace();
-            }		
-	}
-	
-	
-
-    }
-    
-
-    InetAddress _paneAddress;
-    int _panePort;
-    int _paneResvSec;
-    int _bandwidth;
-    int _clientPort;
-    
-    public void setPaneAddress(InetAddress paneAddress) {
-        _paneAddress = paneAddress;
-    }
-    
-    public void setPanePort(int panePort) {
-        _panePort = panePort;
-    }
-    
-    public void setPaneResvSec(int paneResvSec) {
-        _paneResvSec = paneResvSec;
-    }
-    
-    public void setPaneBandwidth(int bandwidth) {
-        _bandwidth = bandwidth;
-    }
-    
-    public void setClientPort(int port) {
-        _clientPort = port;
-    }
-    /***********************************************************/
     public QuorumPeer() {
         super("QuorumPeer");
         quorumStats = new QuorumStats(this);
@@ -949,18 +841,7 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
              * Main loop
              */
              
-            /*************************************************************/
-            int quorumPort = getQuorumAddress().getPort();
-            int electionPort = getElectionAddress().getPort();
-            int clientPort = _clientPort;
-            PaneSpeaker paneSpeaker = new PaneSpeaker(quorumPort, electionPort, clientPort, _paneResvSec, _paneAddress, _panePort);
-            LOG.info("pane set to: quorumPort:" + quorumPort +" electionPort:" + electionPort + " clientPort:" + clientPort +
-                " paneAddress:" + _paneAddress.getHostAddress() + " panePort:" + _panePort + " reservation time:" + _paneResvSec);
-            Thread paneThread = new Thread(paneSpeaker);
-            
-            paneSpeaker.begin();
-            paneThread.start();
-            /*************************************************************/
+
             while (running) {
                 switch (getPeerState()) {
                 case LOOKING:
@@ -1059,9 +940,6 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
                     break;
                 }
             }
-            /*************************************************************/
-            paneSpeaker.end();
-            /*************************************************************/
         } finally {
             LOG.warn("QuorumPeer main thread exited");
             try {

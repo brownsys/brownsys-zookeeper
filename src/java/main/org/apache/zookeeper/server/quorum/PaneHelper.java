@@ -8,7 +8,7 @@ import java.io.IOException;
 public class PaneHelper {
 
     PaneClient _client;
-    PaneShare _root;
+    PaneShare _share;
     InetAddress _myIP;
     int _paneResvSec;
     int _quorumPort;
@@ -54,10 +54,10 @@ public class PaneHelper {
         return _paneResvSec;
     }
 
-    public void set(PaneClient client, PaneShare root, InetAddress myIP, 
+    public void set(PaneClient client, PaneShare share, InetAddress myIP, 
          int quorumPort, int electionPort, int clientPort, int paneResvSec, LinkedList<InetAddress> peers, int bandwidth) {
         _client = client;
-        _root = root;
+        _share = share;
     	_myIP = myIP;
     	_quorumPort = quorumPort;  
     	_electionPort = electionPort;
@@ -86,28 +86,28 @@ public class PaneHelper {
         fg.setSrcHost(srcHost);
         fg.setSrcPort(_quorumPort);
         resv = new PaneReservation(_bandwidth, fg, start, end);
-        _root.reserve(resv);
+        _share.reserve(resv);
 
         fg = new PaneFlowGroup();
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
         fg.setDstPort(_quorumPort);
         resv = new PaneReservation(_bandwidth, fg, start, end);
-        _root.reserve(resv);
+        _share.reserve(resv);
         
         fg = new PaneFlowGroup();
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
         fg.setSrcPort(_clientPort);
         resv = new PaneReservation(_bandwidth, fg, start, end);
-        _root.reserve(resv);
+        _share.reserve(resv);
 
         fg = new PaneFlowGroup();
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
         fg.setDstPort(_clientPort);
         resv = new PaneReservation(_bandwidth, fg, start, end);
-        _root.reserve(resv);        
+        _share.reserve(resv);        
 
     }
 
