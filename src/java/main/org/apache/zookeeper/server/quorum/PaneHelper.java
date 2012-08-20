@@ -15,40 +15,8 @@ public class PaneHelper {
     int _electionPort;
     int _clientPort;
     int _bandwidth;
-    double _lastTime;
-    double _currentTime;
     double _timeout;
     LinkedList<InetAddress> _peers;
-
-    public void setTimeout(double timeout) {
-    	//if no remaining Time, give a 0
-        _timeout = timeout;
-    }   
-    
-    public double getTimeout() {
-        return _timeout;
-    }
-
-    public double getRemainingTime() {
-    	double ret = _paneResvSec - ((double)System.nanoTime() - _lastTime);
-    	return ret > 0? ret:0;	
-    }
-
-    public void setLastTime(double time) {
-        _lastTime = time;
-    }
-    
-    public void setCurrentTime(double time) {
-        _currentTime = time;
-    }
-
-    public double getLastTime() {
-        return _lastTime;
-    }
-
-    public double getCurrentTime() {
-        return _currentTime;
-    }
 
     public double getPaneResvSec() {
         return _paneResvSec;
