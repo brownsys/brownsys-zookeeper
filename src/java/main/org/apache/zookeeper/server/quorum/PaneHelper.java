@@ -98,14 +98,14 @@ public class PaneHelper {
         fg = new PaneFlowGroup();
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
-        fg.setSrcPort(_clientPort);
+        fg.setSrcPort(_electionPort);
         resv = new PaneReservation(_bandwidth, fg, start, end);
         _share.reserve(resv);
 
         fg = new PaneFlowGroup();
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
-        fg.setDstPort(_clientPort);
+        fg.setDstPort(_electionPort);
         resv = new PaneReservation(_bandwidth, fg, start, end);
         _share.reserve(resv);        
 

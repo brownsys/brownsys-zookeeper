@@ -164,10 +164,11 @@ public class QuorumPeerMain {
                                                      config.getPaneAddress(), 
                                                      config.getPaneResvSec(), 
                                                      config.getPaneBandwidth(), 
-                                                     config.getClientPort(), 
-                                                     LOG);
+                                                     config.getClientPort(),
+                                                     config.getUserName()
+                                                     );
           
-          LOG.info("pane set to: quorumPort:" + _paneSpeaker.getQuorumPort() + 
+          LOG.info("PANE set to: quorumPort:" + _paneSpeaker.getQuorumPort() + 
               " electionPort:" + _paneSpeaker.getElectionPort() + 
               " clientPort:" + _paneSpeaker.getClientPort() +
               " paneAddress:" + _paneSpeaker.getPaneAddress().getAddress().getHostAddress() + 

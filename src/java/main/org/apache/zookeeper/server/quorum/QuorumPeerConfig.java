@@ -80,6 +80,7 @@ public class QuorumPeerConfig {
     protected int paneBandwidth = 10;
     protected int clientPort = 0;
     protected InetSocketAddress paneAddress;
+    protected String paneUserName = "root";
     /***********************************************/
 
     /**
@@ -220,6 +221,8 @@ public class QuorumPeerConfig {
                 paneResvSec = Integer.parseInt(value);
             } else if (key.equals("paneBandwidth")) {
                 paneBandwidth = Integer.parseInt(value);
+            } else if (key.equals("paneUserName")) {
+                paneUserName = value;
             } else {
                 System.setProperty("zookeeper." + key, value);
             }
@@ -227,7 +230,7 @@ public class QuorumPeerConfig {
 
         /*********************************************************/
         if (paneIPAddress == null) {
-            throw new IllegalArgumentException("pane server IP address not set");
+            throw new IllegalArgumentException("PANE server IP address not set");
         } else {
             paneAddress = new InetSocketAddress(paneIPAddress, panePort);
         }
@@ -507,6 +510,7 @@ public class QuorumPeerConfig {
     public int getPaneResvSec() { return paneResvSec; }
     public int getPaneBandwidth() { return paneBandwidth; }
     public int getClientPort() { return clientPort; }
+    public String getUserName() { return paneUserName;}
     /***************************************************************/
     
     public int getSnapRetainCount() {

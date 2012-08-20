@@ -17,21 +17,20 @@ public class PaneSpeaker implements Runnable {
     int _quorumPort;
     int _electionPort;
     int _clientPort;
-    //InetAddress _paneAddress;
-    //int _panePort;
     InetSocketAddress _paneAddress;
     PaneClientImpl _client;
     PaneShare _share;
     PaneHelper _helper;
     int _bandwidth;
     Long _myid;
-    Logger LOG;
+    String _userName;
+    private static final Logger LOG = LoggerFactory.getLogger(PaneSpeaker.class);
     Map<Long, QuorumServer> _quorumPeers;
 
     boolean _running;
 
     public PaneSpeaker(Long myid, Map<Long, QuorumServer> quorumPeers, int quorumPort, int electionPort,
-        InetSocketAddress paneAddress, int paneResvSec, int bandwidth, int clientPort, Logger logger) {
+        InetSocketAddress paneAddress, int paneResvSec, int bandwidth, int clientPort, String userName) {
         _myid = myid;
         _quorumPeers = quorumPeers;
         _quorumPort = quorumPort;
@@ -40,7 +39,7 @@ public class PaneSpeaker implements Runnable {
         _bandwidth = bandwidth;
         _paneResvSec = paneResvSec;
         _paneAddress = paneAddress;
-        LOG = logger;        
+        _userName = userName;
     }
 
     public int getPaneResvSec() {
@@ -77,7 +76,7 @@ public class PaneSpeaker implements Runnable {
 
             _client = new PaneClientImpl(_paneAddress.getAddress(), _paneAddress.getPort());
             _share = _client.getRootShare();
-            _client.authenticate("root");
+            _client.authenticate(_userName);
 
             InetAddress myIP = _quorumPeers.get(_myid).addr.getAddress();
             LinkedList<InetAddress> others = new LinkedList<InetAddress>();
@@ -94,15 +93,24 @@ public class PaneSpeaker implements Runnable {
                 others.add(address);    
             }
 
-            while(_running) {            
+            while(_running) { 
+                    
                 _helper.makeReservationOnAll();
                 LOG.info("making reservation for peer port:" + _quorumPort + " and election port:" + _electionPort +
-                        " and client port: " + _clientPort + " pane address:" + _paneAddress.getAddress().getHostAddress() + 
-                        "and pane port:" + _paneAddress.getPort());                
-                try {
-                    Thread.sleep(_paneResvSec);
-                } catch(InterruptedException e) {
-                    LOG.debug("PANE sleeping thread interrupted.");
+                        " and client port: " + _clientPort + " PANE address:" + _paneAddress.getAddress().getHostAddress() + 
+                        "and PANE port:" + _paneAddress.getPort());   
+                
+                int remaining = _paneResvSec;
+                int start =  (int) (System.nanoTime()/1000000000);    
+                
+                while(remaining > 0){                                          
+                    try {
+                        Thread.sleep(remaining);
+                    } catch(InterruptedException e) {
+                        LOG.debug("PANE sleeping thread interrupted.");
+                    }
+                    int now = (int) (System.nanoTime()/1000000000);
+                    remaining = _paneResvSec - (now - start);
                 }
             } 
         } catch(PaneException.InvalidAuthenticateException e) {
