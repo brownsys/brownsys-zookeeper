@@ -33,7 +33,6 @@ import org.apache.zookeeper.server.persistence.FileTxnSnapLog.DatadirException;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 
 import paneclient.*;
-import java.net.Socket;
 
 /**
  *
@@ -157,26 +156,26 @@ public class QuorumPeerMain {
           quorumPeer.setCnxnFactory(cnxnFactory);
           quorumPeer.setLearnerType(config.getPeerType());
           /********************************************************/
-          PaneSpeaker _paneSpeaker = new PaneSpeaker(quorumPeer.getId(), 
-                                                     config.getQuorumVerifier().getAllMembers(), 
-                                                     quorumPeer.getQuorumAddress().getPort(), 
-                                                     quorumPeer.getElectionAddress().getPort(), 
-                                                     config.getPaneAddress(), 
-                                                     config.getPaneResvSec(), 
-                                                     config.getPaneBandwidth(), 
+          PaneSpeaker _paneSpeaker = new PaneSpeaker(quorumPeer.getId(),
+                                                     config.getQuorumVerifier().getAllMembers(),
+                                                     quorumPeer.getQuorumAddress().getPort(),
+                                                     quorumPeer.getElectionAddress().getPort(),
+                                                     config.getPaneAddress(),
+                                                     config.getPaneResvSec(),
+                                                     config.getPaneBandwidth(),
                                                      config.getClientPort(),
                                                      config.getUserName()
                                                      );
-          
-          LOG.info("PANE set to: quorumPort:" + _paneSpeaker.getQuorumPort() + 
-              " electionPort:" + _paneSpeaker.getElectionPort() + 
+
+          LOG.info("PANE set to: quorumPort:" + _paneSpeaker.getQuorumPort() +
+              " electionPort:" + _paneSpeaker.getElectionPort() +
               " clientPort:" + _paneSpeaker.getClientPort() +
-              " paneAddress:" + _paneSpeaker.getPaneAddress().getAddress().getHostAddress() + 
-              " panePort:" + _paneSpeaker.getPaneAddress().getPort() + 
+              " paneAddress:" + _paneSpeaker.getPaneAddress().getAddress().getHostAddress() +
+              " panePort:" + _paneSpeaker.getPaneAddress().getPort() +
               " reservation time:" + _paneSpeaker.getPaneResvSec());
 
           Thread paneThread = new Thread(_paneSpeaker);
-            
+
           _paneSpeaker.begin();
           paneThread.start();
           /********************************************************/

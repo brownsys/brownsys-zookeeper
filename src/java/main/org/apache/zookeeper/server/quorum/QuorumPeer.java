@@ -52,14 +52,6 @@ import org.apache.zookeeper.server.util.ZxidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.net.UnknownHostException;
-
-
 /**
  * This class manages the quorum protocol. There are three states this server
  * can be in:
@@ -840,8 +832,6 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
             /*
              * Main loop
              */
-             
-
             while (running) {
                 switch (getPeerState()) {
                 case LOOKING:
