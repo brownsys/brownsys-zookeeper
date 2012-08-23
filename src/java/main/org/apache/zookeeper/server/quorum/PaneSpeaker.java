@@ -1,15 +1,18 @@
 package org.apache.zookeeper.server.quorum;
 
-import paneclient.*;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.InetAddress;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.zookeeper.server.quorum.QuorumPeer.QuorumServer;
-import java.util.LinkedList;
+
+import paneclient.*;
 
 public class PaneSpeaker implements Runnable {
 
@@ -45,15 +48,15 @@ public class PaneSpeaker implements Runnable {
     public int getPaneResvSec() {
         return _paneResvSec;
     }
-    
+
     public InetSocketAddress getPaneAddress() {
         return _paneAddress;
     }
-    
+
     public int getClientPort() {
         return _clientPort;
     }
-    
+
     public int getQuorumPort() {
         return _quorumPort;
     }
@@ -61,7 +64,7 @@ public class PaneSpeaker implements Runnable {
     public int getElectionPort() {
         return _electionPort;
     }
-    
+
     void begin() {
         _running = true;
     }
@@ -69,8 +72,7 @@ public class PaneSpeaker implements Runnable {
     void end() {
         _running = false;
     }
-    
-    @Override
+
     public void run() {
         try {
 
@@ -83,26 +85,26 @@ public class PaneSpeaker implements Runnable {
 
             _helper = new PaneHelper();
             _helper.set(_client, _share, myIP, _quorumPort, _electionPort, _clientPort, _paneResvSec, others, _bandwidth);
-            
+
             for (Entry<Long, QuorumServer> entry : _quorumPeers.entrySet()) {
                 Long id = entry.getKey();
                 if (id == _myid) {
                     continue;
                 }
                 InetAddress address = entry.getValue().addr.getAddress();
-                others.add(address);    
+                others.add(address);
             }
 
-            while(_running) { 
-                    
+            while(_running) {
+
                 _helper.makeReservationOnAll();
                 LOG.info("making reservation for peer port:" + _quorumPort + " and election port:" + _electionPort +
-                        " and client port: " + _clientPort + " PANE address:" + _paneAddress.getAddress().getHostAddress() + 
-                        "and PANE port:" + _paneAddress.getPort());   
-                
+                        " and client port: " + _clientPort + " PANE address:" + _paneAddress.getAddress().getHostAddress() +
+                        "and PANE port:" + _paneAddress.getPort());
+
                 int remaining = _paneResvSec;
-                int start =  (int) (System.nanoTime()/1000000000);    
-                
+                int start =  (int) (System.nanoTime()/1000000000);
+
                 while (remaining > 0) {
                     try {
                         Thread.sleep(remaining);
@@ -112,7 +114,7 @@ public class PaneSpeaker implements Runnable {
                     int now = (int) (System.nanoTime()/1000000000);
                     remaining = _paneResvSec - (now - start);
                 }
-            } 
+            }
         } catch(PaneException.InvalidAuthenticateException e) {
             LOG.error("Invalid Authentication Exception:" + e.getMessage());
         } catch(PaneException.InvalidResvException e) {

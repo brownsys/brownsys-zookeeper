@@ -1,9 +1,10 @@
 package org.apache.zookeeper.server.quorum;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.LinkedList;
+
 import paneclient.*;
-import java.io.IOException;
 
 public class PaneHelper {
 
@@ -22,17 +23,17 @@ public class PaneHelper {
         return _paneResvSec;
     }
 
-    public void set(PaneClient client, PaneShare share, InetAddress myIP, 
+    public void set(PaneClient client, PaneShare share, InetAddress myIP,
          int quorumPort, int electionPort, int clientPort, int paneResvSec, LinkedList<InetAddress> peers, int bandwidth) {
         _client = client;
         _share = share;
-    	_myIP = myIP;
-    	_quorumPort = quorumPort;  
-    	_electionPort = electionPort;
-    	_clientPort = clientPort;
-    	_paneResvSec = paneResvSec; 
-        _peers = peers; 
-        _bandwidth = bandwidth;	
+        _myIP = myIP;
+        _quorumPort = quorumPort;
+        _electionPort = electionPort;
+        _clientPort = clientPort;
+        _paneResvSec = paneResvSec;
+        _peers = peers;
+        _bandwidth = bandwidth;
     }
 
     public void makeReservationOnAll() throws PaneException.InvalidResvException, IOException {
@@ -45,11 +46,12 @@ public class PaneHelper {
         PaneReservation resv;
         PaneRelativeTime start = new PaneRelativeTime();
         PaneRelativeTime end = new PaneRelativeTime();
-        PaneFlowGroup fg = new PaneFlowGroup();
+        PaneFlowGroup fg;
 
         start.setRelativeTime(0);
         end.setRelativeTime(_paneResvSec);
-        
+
+        fg = new PaneFlowGroup();
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
         fg.setSrcPort(_quorumPort);
@@ -62,7 +64,7 @@ public class PaneHelper {
         fg.setDstPort(_quorumPort);
         resv = new PaneReservation(_bandwidth, fg, start, end);
         _share.reserve(resv);
-        
+
         fg = new PaneFlowGroup();
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
@@ -75,9 +77,9 @@ public class PaneHelper {
         fg.setSrcHost(srcHost);
         fg.setDstPort(_electionPort);
         resv = new PaneReservation(_bandwidth, fg, start, end);
-        _share.reserve(resv);        
+        _share.reserve(resv);
 
     }
 
-    
+
 }
