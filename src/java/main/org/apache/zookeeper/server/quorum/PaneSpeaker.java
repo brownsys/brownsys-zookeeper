@@ -103,22 +103,22 @@ public class PaneSpeaker implements Runnable {
                 int remaining = _paneResvSec;
                 int start =  (int) (System.nanoTime()/1000000000);    
                 
-                while(remaining > 0){                                          
+                while (remaining > 0) {
                     try {
                         Thread.sleep(remaining);
                     } catch(InterruptedException e) {
-                        LOG.debug("PANE sleeping thread interrupted.");
+                        LOG.error("PANE sleeping thread interrupted.");
                     }
                     int now = (int) (System.nanoTime()/1000000000);
                     remaining = _paneResvSec - (now - start);
                 }
             } 
         } catch(PaneException.InvalidAuthenticateException e) {
-            LOG.debug("Invalid Authentication Exception:" + e.getMessage());           
+            LOG.error("Invalid Authentication Exception:" + e.getMessage());
         } catch(PaneException.InvalidResvException e) {
-            LOG.debug("Invalid Reservation Exception:" + e.getMessage());
+            LOG.error("Invalid Reservation Exception:" + e.getMessage());
         } catch(IOException e) {
-            LOG.debug("IOException" + e.getMessage());
+            LOG.error("IOException" + e.getMessage());
         }
     }
 }
