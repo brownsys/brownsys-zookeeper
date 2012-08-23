@@ -44,7 +44,6 @@ import org.apache.zookeeper.server.quorum.flexible.QuorumMaj;
 import org.apache.zookeeper.server.quorum.flexible.QuorumVerifier;
 import org.apache.zookeeper.server.util.VerifyingFileFactory;
 
-import java.net.Socket;
 public class QuorumPeerConfig {
     private static final Logger LOG = LoggerFactory.getLogger(QuorumPeerConfig.class);
 
@@ -73,12 +72,11 @@ public class QuorumPeerConfig {
     protected int purgeInterval = 0;
 
     protected LearnerType peerType = LearnerType.PARTICIPANT;
-    
-    
+
+
     /***********************************************/
     protected int paneResvSec = 60;
     protected int paneBandwidth = 10;
-    protected int clientPort = 0;
     protected InetSocketAddress paneAddress;
     protected String paneUserName = "root";
     /***********************************************/
@@ -122,13 +120,13 @@ public class QuorumPeerConfig {
             }
             
             parseProperties(cfg);
-         
+
             // backward compatibility - dynamic configuration in the same file as static configuration params
             // see writeDynamicConfig() - we change the config file to new format if reconfig happens
             if (dynamicConfigFileStr == null) {
                 configBackwardCompatibilityMode = true;
                 configFileStr = path;                
-                parseDynamicConfig(cfg, electionAlg);  
+                parseDynamicConfig(cfg, electionAlg);
                 checkValidity();                
             }
 
@@ -166,10 +164,11 @@ public class QuorumPeerConfig {
      */
     public void parseProperties(Properties zkProp)
     throws IOException, ConfigException {
-    
         InetAddress paneIPAddress = null;
         int panePort = 4242;
+        int clientPort = 0;
         String clientPortAddress = null;
+
         VerifyingFileFactory vff = new VerifyingFileFactory.Builder(LOG).warnForRelativePath().build();
         for (Entry<Object, Object> entry : zkProp.entrySet()) {
             String key = entry.getKey().toString().trim();
@@ -230,7 +229,7 @@ public class QuorumPeerConfig {
 
         /*********************************************************/
         if (paneIPAddress == null) {
-            throw new IllegalArgumentException("PANE server IP address not set");
+            throw new ConfigException("PANE server IP address not set");
         } else {
             paneAddress = new InetSocketAddress(paneIPAddress, panePort);
         }
@@ -270,10 +269,10 @@ public class QuorumPeerConfig {
         if (minSessionTimeout > maxSessionTimeout) {
             throw new IllegalArgumentException(
                     "minSessionTimeout must not be larger than maxSessionTimeout");
-        }  
-     
+        }
+
     }
-    
+
     /**
      * Writes dynamic configuration file, updates static config file if needed. 
      * @param dynamicConfigFilename
@@ -509,10 +508,10 @@ public class QuorumPeerConfig {
     public InetSocketAddress getPaneAddress() { return paneAddress; }
     public int getPaneResvSec() { return paneResvSec; }
     public int getPaneBandwidth() { return paneBandwidth; }
-    public int getClientPort() { return clientPort; }
+    public int getClientPort() { return clientPortAddress.getPort(); }
     public String getUserName() { return paneUserName;}
     /***************************************************************/
-    
+
     public int getSnapRetainCount() {
         return snapRetainCount;
     }
