@@ -32,7 +32,7 @@ import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog.DatadirException;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 
-import paneclient.*;
+import edu.brown.cs.paneclient.*;
 
 /**
  *

@@ -17,6 +17,7 @@
    limitations under the License.
 -->
 
+  <property name="local-maven2-dir" value="${user.home}/.m2/repository/" />
   <property name="repo.maven.org"
     value="http://repo1.maven.org/maven2/" override="false"/>
   <property name="repo.jboss.org"
@@ -36,7 +37,13 @@
     <ibiblio name="sun-maven2" root="${repo.sun.org}"
       pattern="${maven2.pattern.ext}" m2compatible="true"/>
 
-    <chain name="default" dual="true">
+    <filesystem name="local-maven-2" m2compatible="true" force="false" local="true">
+       <artifact pattern="${local-maven2-dir}/[organisation]/[module]/[revision]/[module]-[revision].[ext]"/>
+       <ivy pattern="${local-maven2-dir}/[organisation]/[module]/[revision]/[module]-[revision].pom"/>
+    </filesystem>
+
+    <chain name="default" dual="true" checkmodified="true" changingPattern=".*SNAPSHOT">
+      <resolver ref="local-maven-2"/>
       <resolver ref="maven2"/>
       <resolver ref="jboss-maven2"/>
       <resolver ref="sun-maven2"/>

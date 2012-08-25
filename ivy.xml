@@ -39,6 +39,7 @@
   </publications>
 
   <dependencies>
+    <dependency org="edu.brown.cs" name="paneclient" rev="0.1-SNAPSHOT"/>
     <dependency org="org.slf4j" name="slf4j-api" rev="1.6.2"/>
     <dependency org="org.slf4j" name="slf4j-log4j12" rev="1.6.2" transitive="false"/>
     <dependency org="commons-cli" name="commons-cli" rev="1.2" />

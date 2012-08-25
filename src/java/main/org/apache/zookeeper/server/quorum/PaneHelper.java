@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.LinkedList;
 
-import paneclient.*;
+import edu.brown.cs.paneclient.*;
 
 public class PaneHelper {
 
