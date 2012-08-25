@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.zookeeper.server.quorum.QuorumPeer.QuorumServer;
 
-import edu.brown.cs.paneclient.*;
+import edu.brown.cs.paneclient.PaneClientImpl;
+import edu.brown.cs.paneclient.PaneException;
+import edu.brown.cs.paneclient.PaneShare;
 
 public class PaneSpeaker implements Runnable {
 
