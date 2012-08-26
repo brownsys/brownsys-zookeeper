@@ -32,8 +32,6 @@ import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog.DatadirException;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 
-import edu.brown.cs.paneclient.*;
-
 /**
  *
  * <h2>Configuration file</h2>
