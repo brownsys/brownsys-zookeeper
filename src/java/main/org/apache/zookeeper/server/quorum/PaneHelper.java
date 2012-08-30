@@ -60,6 +60,7 @@ public class PaneHelper {
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
         fg.setSrcPort(_quorumPort);
+        fg.setTransportProto(PaneFlowGroup.PROTO_TCP);
         resv = new PaneReservation(_bandwidth, fg, start, end);
         _share.reserve(resv);
 
@@ -67,6 +68,7 @@ public class PaneHelper {
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
         fg.setDstPort(_quorumPort);
+        fg.setTransportProto(PaneFlowGroup.PROTO_TCP);
         resv = new PaneReservation(_bandwidth, fg, start, end);
         _share.reserve(resv);
 
@@ -74,6 +76,7 @@ public class PaneHelper {
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
         fg.setSrcPort(_electionPort);
+        fg.setTransportProto(PaneFlowGroup.PROTO_TCP);
         resv = new PaneReservation(_bandwidth, fg, start, end);
         _share.reserve(resv);
 
@@ -81,6 +84,7 @@ public class PaneHelper {
         fg.setDstHost(_myIP);
         fg.setSrcHost(srcHost);
         fg.setDstPort(_electionPort);
+        fg.setTransportProto(PaneFlowGroup.PROTO_TCP);
         resv = new PaneReservation(_bandwidth, fg, start, end);
         _share.reserve(resv);
 
