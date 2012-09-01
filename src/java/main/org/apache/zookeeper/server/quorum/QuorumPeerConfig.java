@@ -78,7 +78,7 @@ public class QuorumPeerConfig {
     /***********************************************/
     protected int paneResvSec = 60;
     protected int paneBandwidth = 10;
-    protected InetSocketAddress paneAddress;
+    protected InetSocketAddress paneAddress = null;
     protected String paneUserName = "root";
     /***********************************************/
 
@@ -166,7 +166,7 @@ public class QuorumPeerConfig {
     public void parseProperties(Properties zkProp)
     throws IOException, ConfigException {
         InetAddress paneIPAddress = null;
-        int panePort = 4242;
+        int panePort = 0;
         int clientPort = 0;
         String clientPortAddress = null;
 
@@ -229,10 +229,12 @@ public class QuorumPeerConfig {
         }
 
         /*********************************************************/
-        if (paneIPAddress == null) {
-            throw new ConfigException("PANE server IP address not set");
-        } else {
-            paneAddress = new InetSocketAddress(paneIPAddress, panePort);
+        if (paneIPAddress != null) {
+            if (panePort == 0) {
+                throw new ConfigException("PANE server address is set, but not the port.");
+            } else {
+                paneAddress = new InetSocketAddress(paneIPAddress, panePort);
+            }
         }
         /*********************************************************/
         // Reset to MIN_SNAP_RETAIN_COUNT if invalid (less than 3)

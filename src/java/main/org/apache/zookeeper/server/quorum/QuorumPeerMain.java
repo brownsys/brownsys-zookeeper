@@ -154,28 +154,32 @@ public class QuorumPeerMain {
           quorumPeer.setCnxnFactory(cnxnFactory);
           quorumPeer.setLearnerType(config.getPeerType());
           /********************************************************/
-          PaneSpeaker _paneSpeaker = new PaneSpeaker(quorumPeer.getId(),
-                                                     config.getQuorumVerifier().getAllMembers(),
-                                                     quorumPeer.getQuorumAddress().getPort(),
-                                                     quorumPeer.getElectionAddress().getPort(),
-                                                     config.getPaneAddress(),
-                                                     config.getPaneResvSec(),
-                                                     config.getPaneBandwidth(),
-                                                     config.getClientPort(),
-                                                     config.getUserName()
-                                                     );
+          if (config.getPaneAddress() != null) {
+	          PaneSpeaker _paneSpeaker = new PaneSpeaker(quorumPeer.getId(),
+	                                                     config.getQuorumVerifier().getAllMembers(),
+	                                                     quorumPeer.getQuorumAddress().getPort(),
+	                                                     quorumPeer.getElectionAddress().getPort(),
+	                                                     config.getPaneAddress(),
+	                                                     config.getPaneResvSec(),
+	                                                     config.getPaneBandwidth(),
+	                                                     config.getClientPort(),
+	                                                     config.getUserName()
+	                                                     );
 
-          LOG.info("PANE set to: quorumPort:" + _paneSpeaker.getQuorumPort() +
-              " electionPort:" + _paneSpeaker.getElectionPort() +
-              " clientPort:" + _paneSpeaker.getClientPort() +
-              " paneAddress:" + _paneSpeaker.getPaneAddress().getAddress().getHostAddress() +
-              " panePort:" + _paneSpeaker.getPaneAddress().getPort() +
-              " reservation time:" + _paneSpeaker.getPaneResvSec());
+	          LOG.info("PANE set to: quorumPort:" + _paneSpeaker.getQuorumPort() +
+	              " electionPort:" + _paneSpeaker.getElectionPort() +
+	              " clientPort:" + _paneSpeaker.getClientPort() +
+	              " paneAddress:" + _paneSpeaker.getPaneAddress().getAddress().getHostAddress() +
+	              " panePort:" + _paneSpeaker.getPaneAddress().getPort() +
+	              " reservation time:" + _paneSpeaker.getPaneResvSec());
 
-          Thread paneThread = new Thread(_paneSpeaker);
+	          Thread paneThread = new Thread(_paneSpeaker);
 
-          _paneSpeaker.begin();
-          paneThread.start();
+	          _paneSpeaker.begin();
+	          paneThread.start();
+          } else {
+	          LOG.info("PANE support is not configured");
+          }
           /********************************************************/
           
           quorumPeer.start();
