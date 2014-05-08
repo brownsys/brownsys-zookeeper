@@ -1,3 +1,12 @@
+brownsys additions:
+
+RETRO:
+1. check out the retro branch
+2. build using: ant -Djavac.args="-Xlint -Xmaxwarns 1000" clean compile
+3. run with bin/zkServer
+Jon: Instrumentation contains some debug stuff and is more verbose than necessary.  AspectJ dependencies are in the src/java/lib folder.  I don't know how to use ANT particularly well, so for now that's where they live and require manual updating.
+
+
 For the latest information about ZooKeeper, please visit our website at:
 
    http://zookeeper.apache.org/
