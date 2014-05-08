@@ -128,7 +128,7 @@ start-foreground)
     if [ "${ZOO_NOEXEC}" != "" ]; then
       ZOO_CMD=("$JAVA")
     fi
-    "${ZOO_CMD[@]}" "-Dzookeeper.log.dir=${ZOO_LOG_DIR}" "-Dzookeeper.root.logger=${ZOO_LOG4J_PROP}" \
+    "${ZOO_CMD[@]}" -Xmx6G "-Dzookeeper.log.dir=${ZOO_LOG_DIR}" "-Dzookeeper.root.logger=${ZOO_LOG4J_PROP}" \
     -cp "$CLASSPATH" $JVMFLAGS $ZOOMAIN "$ZOOCFG"
     ;;
 print-cmd)

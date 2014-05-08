@@ -311,7 +311,7 @@ public class FileTxnSnapLog {
      * @throws IOException
      */
     public boolean append(Request si) throws IOException {
-        return txnLog.append(si.hdr, si.txn);
+        return txnLog.append(si.hdr, si.txn, si);
     }
 
     /**

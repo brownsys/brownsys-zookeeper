@@ -76,6 +76,10 @@ import org.apache.zookeeper.server.ZooTrace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.brown.cs.systems.resourcetracing.resources.Network;
+import edu.brown.cs.systems.xtrace.Context;
+import edu.brown.cs.systems.xtrace.XTrace;
+
 /**
  * This class manages the socket i/o for the client. ClientCnxn maintains a list
  * of available servers to connect to and "transparently" switches servers it is
@@ -247,6 +251,7 @@ public class ClientCnxn {
         String serverPath;
 
         boolean finished;
+        Context finished_context;
 
         AsyncCallback cb;
 
@@ -423,6 +428,23 @@ public class ClientCnxn {
             this.watchers = watchers;
             this.event = event;
         }
+        
+        @Override
+        public String toString() {
+        	StringBuilder builder = new StringBuilder();
+        	builder.append("WatcherSetEventPair(event=[");
+        	builder.append(event.toString());
+        	builder.append("], watchers=[");
+        	boolean first = true;
+        	for (Watcher watcher : watchers) {
+        		if (!first)
+        			builder.append(",");
+        		first = false;
+        		builder.append(watcher.toString());
+        	}
+        	builder.append("])");
+        	return builder.toString();
+        }
     }
 
     /**
@@ -491,6 +513,7 @@ public class ClientCnxn {
            try {
               isRunning = true;
               while (true) {
+            	 XTrace.stop();
                  Object event = waitingEvents.take();
                  if (event == eventOfDeath) {
                     wasKilled = true;
@@ -621,6 +644,7 @@ public class ClientCnxn {
         }
 
         if (p.cb == null) {
+        	p.finished_context = XTrace.get();
             synchronized (p) {
                 p.finished = true;
                 p.notifyAll();
@@ -711,6 +735,7 @@ public class ClientCnxn {
             ReplyHeader replyHdr = new ReplyHeader();
 
             replyHdr.deserialize(bbia, "header");
+            Network.Read.alreadyFinished(clientCnxnSocket, incomingBuffer.capacity()+4); // buffer was allocated to exact size plus an int length
             if (replyHdr.getXid() == -2) {
                 // -2 is the xid for pings
                 if (LOG.isDebugEnabled()) {
@@ -820,6 +845,7 @@ public class ClientCnxn {
                 }
             } finally {
                 finishPacket(packet);
+            	XTrace.stop();
             }
         }
 
@@ -987,6 +1013,7 @@ public class ClientCnxn {
             long lastPingRwServer = System.currentTimeMillis();
             final int MAX_SEND_PING_INTERVAL = 10000; //10 seconds
             while (state.isAlive()) {
+            	XTrace.stop();
                 try {
                     if (!clientCnxnSocket.isConnected()) {
                         if(!isFirstConnect){
@@ -1342,6 +1369,8 @@ public class ClientCnxn {
                 packet.wait();
             }
         }
+        if (packet.finished_context!=null)
+        	XTrace.join(packet.finished_context);
         return r;
     }
 

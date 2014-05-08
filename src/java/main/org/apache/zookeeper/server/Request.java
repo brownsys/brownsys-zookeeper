@@ -29,6 +29,8 @@ import org.apache.zookeeper.ZooDefs.OpCode;
 import org.apache.zookeeper.data.Id;
 import org.apache.zookeeper.txn.TxnHeader;
 
+import edu.brown.cs.systems.xtrace.Context;
+
 /**
  * This is the structure that represents a request moving through a chain of
  * RequestProcessors. There are various pieces of information that is tacked
@@ -62,6 +64,11 @@ public class Request {
     public final int cxid;
 
     public final int type;
+    
+    public long preprequest_enqueue_nanos;
+    public long syncrequest_enqueue_nanos;
+    public long syncbytes = 0;
+    public Context sync_xtrace = null;
 
     public final ByteBuffer request;
 

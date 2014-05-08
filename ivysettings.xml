@@ -26,6 +26,7 @@
   <property name="maven2.pattern"
     value="[organisation]/[module]/[revision]/[module]-[revision]"/>
   <property name="maven2.pattern.ext" value="${maven2.pattern}.[ext]"/>
+  <property name="m2-pattern" value="${user.home}/.m2/repository/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]" override="false" />
   <include url="${ivy.default.conf.dir}/ivyconf-local.xml"/>
   <settings defaultResolver="default"/>
   <resolvers>
@@ -40,6 +41,11 @@
       <resolver ref="maven2"/>
       <resolver ref="jboss-maven2"/>
       <resolver ref="sun-maven2"/>
+            <filesystem name="local-maven2" m2compatible="true" >
+                <artifact pattern="${m2-pattern}"/>
+                <ivy pattern="${m2-pattern}"/>
+            </filesystem>
+            <ibiblio name="central" m2compatible="true"/>
     </chain>
 
   </resolvers>

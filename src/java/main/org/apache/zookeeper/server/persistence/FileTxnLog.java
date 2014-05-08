@@ -40,6 +40,9 @@ import org.apache.jute.BinaryOutputArchive;
 import org.apache.jute.InputArchive;
 import org.apache.jute.OutputArchive;
 import org.apache.jute.Record;
+import org.apache.zookeeper.server.Request;
+import org.apache.zookeeper.server.SyncLogAggregator;
+import org.apache.zookeeper.server.ZKDatabase;
 import org.apache.zookeeper.server.util.SerializeUtils;
 import org.apache.zookeeper.txn.TxnHeader;
 import org.slf4j.Logger;
@@ -88,6 +91,8 @@ import org.slf4j.LoggerFactory;
  * </pre></blockquote> 
  */
 public class FileTxnLog implements TxnLog {
+	public static final SyncLogAggregator aggregator = new SyncLogAggregator(FileTxnLog.class, "FileTxnLog");
+	
     private static final Logger LOG;
 
     static long preAllocSize =  65536 * 1024;
@@ -185,7 +190,7 @@ public class FileTxnLog implements TxnLog {
      * @param txn the transaction part of the entry
      * returns true iff something appended, otw false 
      */
-    public synchronized boolean append(TxnHeader hdr, Record txn)
+    public synchronized boolean append(TxnHeader hdr, Record txn, Request req)
         throws IOException
     {
         if (hdr != null) {
@@ -212,6 +217,7 @@ public class FileTxnLog implements TxnLog {
                currentSize = fos.getChannel().position();
                streamsToFlush.add(fos);
             }
+            long begin = System.nanoTime();
             padFile(fos);
             byte[] buf = Util.marshallTxnEntry(hdr, txn);
             if (buf == null || buf.length == 0) {
@@ -222,6 +228,9 @@ public class FileTxnLog implements TxnLog {
             crc.update(buf, 0, buf.length);
             oa.writeLong(crc.getValue(), "txnEntryCRC");
             Util.writeTxnBytes(oa, buf);
+            long duration = System.nanoTime() - begin;
+            aggregator.write(buf.length, duration);
+            req.syncbytes = buf.length;
             
             return true;
         }
@@ -318,30 +327,35 @@ public class FileTxnLog implements TxnLog {
      * disk
      */
     public synchronized void commit() throws IOException {
-        if (logStream != null) {
-            logStream.flush();
-        }
-        for (FileOutputStream log : streamsToFlush) {
-            log.flush();
-            if (forceSync) {
-                long startSyncNS = System.nanoTime();
-
-                log.getChannel().force(false);
-
-                long syncElapsedMS =
-                    TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startSyncNS);
-                if (syncElapsedMS > fsyncWarningThresholdMS) {
-                    LOG.warn("fsync-ing the write ahead log in "
-                            + Thread.currentThread().getName()
-                            + " took " + syncElapsedMS
-                            + "ms which will adversely effect operation latency. "
-                            + "See the ZooKeeper troubleshooting guide");
-                }
-            }
-        }
-        while (streamsToFlush.size() > 1) {
-            streamsToFlush.removeFirst().close();
-        }
+    	long begin = System.nanoTime();
+    	try {
+	        if (logStream != null) {
+	            logStream.flush();
+	        }
+	        for (FileOutputStream log : streamsToFlush) {
+	            log.flush();
+	            if (forceSync) {
+	                long startSyncNS = System.nanoTime();
+	
+	                log.getChannel().force(false);
+	
+	                long syncElapsedMS =
+	                    TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startSyncNS);
+	                if (syncElapsedMS > fsyncWarningThresholdMS) {
+	                    LOG.warn("fsync-ing the write ahead log in "
+	                            + Thread.currentThread().getName()
+	                            + " took " + syncElapsedMS
+	                            + "ms which will adversely effect operation latency. "
+	                            + "See the ZooKeeper troubleshooting guide");
+	                }
+	            }
+	        }
+	        while (streamsToFlush.size() > 1) {
+	            streamsToFlush.removeFirst().close();
+	        }
+    	} finally {
+    		aggregator.synced(System.nanoTime() - begin);
+    	}
     }
 
     /**

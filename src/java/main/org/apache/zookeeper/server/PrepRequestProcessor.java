@@ -22,8 +22,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,41 +32,43 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.jute.Record;
 import org.apache.jute.BinaryOutputArchive;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.jute.Record;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.MultiTransactionRecord;
 import org.apache.zookeeper.Op;
 import org.apache.zookeeper.ZooDefs;
-import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.OpCode;
 import org.apache.zookeeper.common.PathUtils;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
 import org.apache.zookeeper.data.StatPersisted;
+import org.apache.zookeeper.proto.CheckVersionRequest;
 import org.apache.zookeeper.proto.CreateRequest;
 import org.apache.zookeeper.proto.DeleteRequest;
 import org.apache.zookeeper.proto.SetACLRequest;
 import org.apache.zookeeper.proto.SetDataRequest;
-import org.apache.zookeeper.proto.CheckVersionRequest;
 import org.apache.zookeeper.server.ZooKeeperServer.ChangeRecord;
 import org.apache.zookeeper.server.auth.AuthenticationProvider;
 import org.apache.zookeeper.server.auth.ProviderRegistry;
 import org.apache.zookeeper.server.quorum.Leader.XidRolloverException;
+import org.apache.zookeeper.txn.CheckVersionTxn;
 import org.apache.zookeeper.txn.CreateSessionTxn;
 import org.apache.zookeeper.txn.CreateTxn;
 import org.apache.zookeeper.txn.DeleteTxn;
 import org.apache.zookeeper.txn.ErrorTxn;
+import org.apache.zookeeper.txn.MultiTxn;
 import org.apache.zookeeper.txn.SetACLTxn;
 import org.apache.zookeeper.txn.SetDataTxn;
-import org.apache.zookeeper.txn.CheckVersionTxn;
 import org.apache.zookeeper.txn.Txn;
-import org.apache.zookeeper.txn.MultiTxn;
 import org.apache.zookeeper.txn.TxnHeader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.brown.cs.systems.resourcetracing.resources.QueueResource;
+import edu.brown.cs.systems.xtrace.XTrace;
 
 /**
  * This request processor is generally at the start of a RequestProcessor
@@ -93,6 +95,7 @@ public class PrepRequestProcessor extends Thread implements RequestProcessor {
     private static  boolean failCreate = false;
 
     LinkedBlockingQueue<Request> submittedRequests = new LinkedBlockingQueue<Request>();
+    QueueResource submittedRequestsResource = new QueueResource("PrepRequestProcessor", 1);
 
     RequestProcessor nextProcessor;
 
@@ -118,6 +121,9 @@ public class PrepRequestProcessor extends Thread implements RequestProcessor {
         try {
             while (true) {
                 Request request = submittedRequests.take();
+                long begin = System.nanoTime();
+                submittedRequestsResource.starting(request.preprequest_enqueue_nanos, begin);
+                
                 long traceMask = ZooTrace.CLIENT_REQUEST_TRACE_MASK;
                 if (request.type == OpCode.ping) {
                     traceMask = ZooTrace.CLIENT_PING_TRACE_MASK;
@@ -129,6 +135,9 @@ public class PrepRequestProcessor extends Thread implements RequestProcessor {
                     break;
                 }
                 pRequest(request);
+                
+                submittedRequestsResource.finished(request.preprequest_enqueue_nanos, begin, System.nanoTime());
+                XTrace.stop();
             }
         } catch (InterruptedException e) {
             LOG.error("Unexpected interruption", e);
@@ -754,6 +763,8 @@ public class PrepRequestProcessor extends Thread implements RequestProcessor {
 
     public void processRequest(Request request) {
         // request.addRQRec(">prep="+zks.outstandingChanges.size());
+    	request.preprequest_enqueue_nanos = System.nanoTime();
+    	submittedRequestsResource.enqueue();
         submittedRequests.add(request);
     }
 

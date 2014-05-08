@@ -66,6 +66,8 @@ import org.apache.zookeeper.txn.TxnHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.brown.cs.systems.xtrace.XTrace;
+
 
 /**
  * This class implements a simple standalone ZooKeeperServer. It sets up the
@@ -74,6 +76,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     protected static final Logger LOG;
+    protected static final XTrace.Logger XTRACE = XTrace.getLogger(ZooKeeperServer.class);
     
     static {
         LOG = LoggerFactory.getLogger(ZooKeeperServer.class);
@@ -884,6 +887,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
         BinaryInputArchive bia = BinaryInputArchive.getArchive(bais);
         RequestHeader h = new RequestHeader();
         h.deserialize(bia, "header");
+        XTRACE.log("Start of processPacket");
         // Through the magic of byte buffers, txn will not be
         // pointing
         // to the start of the txn
@@ -943,6 +947,8 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
             }
         }
         cnxn.incrOutstandingRequests(h);
+        XTRACE.log("End of processPacket");
+        XTrace.stop();
     }
 
     private Record processSasl(ByteBuffer incomingBuffer, ServerCnxn cnxn) throws IOException {

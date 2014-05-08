@@ -34,6 +34,7 @@ public class JRecord extends JCompType {
     private String mName;
     private String mModule;
     private ArrayList<JField> mFields;
+    private boolean xtrace;
 
     /**
      * Creates a new instance of JRecord
@@ -46,6 +47,13 @@ public class JRecord extends JCompType {
         mName = name.substring(idx+1);
         mModule = name.substring(0, idx);
         mFields = flist;
+        for (int i = 0; i < flist.size(); i++) {
+        	if (flist.get(i).getName().equals("xtrace")) {
+        		xtrace = true;
+        		flist.remove(i);
+        		break;
+        	}
+        }
     }
 
     public String getName() {
@@ -427,6 +435,7 @@ public class JRecord extends JCompType {
         jj.write("package "+getJavaPackage()+";\n\n");
         jj.write("import org.apache.jute.*;\n");
         jj.write("public class "+getName()+" implements Record {\n");
+        jj.write(JField.genJavaCreateXTraceLogger());
         for (Iterator<JField> i = mFields.iterator(); i.hasNext();) {
             JField jf = i.next();
             jj.write(jf.genJavaDecl());
@@ -446,7 +455,7 @@ public class JRecord extends JCompType {
         fIdx = 0;
         for (Iterator<JField> i = mFields.iterator(); i.hasNext(); fIdx++) {
             JField jf = i.next();
-            jj.write(jf.genJavaConstructorSet(jf.getName()));
+        	jj.write(jf.genJavaConstructorSet(jf.getName()));
         }
         jj.write("  }\n");
         fIdx = 0;
@@ -461,6 +470,8 @@ public class JRecord extends JCompType {
             JField jf = i.next();
             jj.write(jf.genJavaWriteMethodName());
         }
+        if (xtrace)
+        	jj.write(JField.genJavaWriteXTrace());
         jj.write("    a_.endRecord(this,tag);\n");
         jj.write("  }\n");
 
@@ -471,6 +482,8 @@ public class JRecord extends JCompType {
             JField jf = i.next();
             jj.write(jf.genJavaReadMethodName());
         }
+        if (xtrace)
+        	jj.write(JField.genJavaReadXTrace());
         jj.write("    a_.endRecord(tag);\n");
         jj.write("}\n");
 

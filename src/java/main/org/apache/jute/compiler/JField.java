@@ -136,5 +136,21 @@ public class JField {
     public String genJavaConstructorSet(String fname) {
         return mType.genJavaConstructorSet(mName, fname);
     }
+    
+    public static String genJavaWriteXTrace() {
+ 	    return "    XTRACE.log(\"Serializing xtrace\");\n" +
+               "    if (edu.brown.cs.systems.xtrace.XTrace.active()) a_.writeBuffer(edu.brown.cs.systems.xtrace.XTrace.bytes(),\"xtrace\");\n" +
+ 	           "    else a_.writeBuffer(new byte[0],\"xtrace\");\n";
+    }
+    
+    public static String genJavaReadXTrace() {
+    	return "    byte[] xtrace_bytes = a_.readBuffer(\"xtrace\");\n"+
+    		   "    if (xtrace_bytes.length>0) edu.brown.cs.systems.xtrace.XTrace.set(xtrace_bytes);\n" +
+        	   "    XTRACE.log(\"Deserialized xtrace\");\n";    		
+    }
+
+	public static String genJavaCreateXTraceLogger() {
+		return "  private final edu.brown.cs.systems.xtrace.XTrace.Logger XTRACE = edu.brown.cs.systems.xtrace.XTrace.getLogger(getClass());\n";
+	}
 
 }

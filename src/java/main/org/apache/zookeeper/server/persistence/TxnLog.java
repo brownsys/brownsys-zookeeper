@@ -21,6 +21,7 @@ package org.apache.zookeeper.server.persistence;
 import java.io.IOException;
 
 import org.apache.jute.Record;
+import org.apache.zookeeper.server.Request;
 import org.apache.zookeeper.txn.TxnHeader;
 
 /**
@@ -42,7 +43,7 @@ public interface TxnLog {
      * returns true iff something appended, otw false 
      * @throws IOException
      */
-    boolean append(TxnHeader hdr, Record r) throws IOException;
+    boolean append(TxnHeader hdr, Record r, Request req) throws IOException;
 
     /**
      * Start reading the transaction logs

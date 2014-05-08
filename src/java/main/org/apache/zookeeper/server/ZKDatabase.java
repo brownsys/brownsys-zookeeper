@@ -57,7 +57,7 @@ import org.apache.zookeeper.txn.TxnHeader;
  * and snapshots from the disk.
  */
 public class ZKDatabase {
-    
+	
     private static final Logger LOG = LoggerFactory.getLogger(ZKDatabase.class);
     
     /**

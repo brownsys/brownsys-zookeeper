@@ -88,21 +88,25 @@ module org.apache.zookeeper.proto {
     class RequestHeader {
         int xid;
         int type;
+        buffer xtrace;
     }
     class MultiHeader {
         int type;
         boolean done;
         int err;
+        buffer xtrace;
     }
     class AuthPacket {
         int type;
         ustring scheme;
         buffer auth;
+        buffer xtrace;
     }
     class ReplyHeader {
         int xid;
         long zxid;
         int err;
+        buffer xtrace;
     }
     class GetDataRequest {
         ustring path;
@@ -237,6 +241,7 @@ module org.apache.zookeeper.txn {
         long zxid;
         long time;
         int type;
+        buffer xtrace;
     }
     class CreateTxnV0 {
         ustring path;

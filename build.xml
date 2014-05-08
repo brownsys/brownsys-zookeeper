@@ -20,7 +20,8 @@
 <project name="ZooKeeper" default="jar" 
 xmlns:ivy="antlib:org.apache.ivy.ant"
 xmlns:artifact="antlib:org.apache.maven.artifact.ant"
-xmlns:maven="antlib:org.apache.maven.artifact.ant">
+xmlns:maven="antlib:org.apache.maven.artifact.ant"
+xmlns:aspectj="antlib:org.aspectj">
 
     <!-- read build.properties from the basedir if any -->
     <property file="${basedir}/build.properties" />
@@ -197,6 +198,9 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
     <property name="tests-jar" value="${dist.maven.dir}/${final.name}-tests.jar"/>
     <property name="sources-jar" value="${dist.maven.dir}/${final.name}-sources.jar"/>
     <property name="javadoc-jar" value="${dist.maven.dir}/${final.name}-javadoc.jar"/>
+	
+	
+	<property name="ajc.adapter" value="org.aspectj.tools.ant.taskdefs.Ajc11CompilerAdapter"/>
 
     <!-- ====================================================== -->
     <!-- Macro definitions                                      -->
@@ -269,7 +273,7 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
     <target name="jute" depends="init">
         <javac srcdir="${java.src.dir}" destdir="${build.classes}" includeantruntime="false"
             target="${javac.target}" source="${javac.source}"
-            includes="org/apache/jute/**" debug="on" />
+            includes="org/apache/jute/**" debug="on" classpath="${lib.dir}/xtrace-3.0.jar"/>
     </target>
 
     <target name="compile_jute_uptodate">
@@ -338,7 +342,7 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
     
     <target name="build-generated" depends="compile_jute,version-info" >
         <javac srcdir="${src_generated.dir}" destdir="${build.classes}" includeantruntime="false"
-            target="${javac.target}" source="${javac.source}" debug="on" />
+            target="${javac.target}" source="${javac.source}" debug="on" classpath="${lib.dir}/xtrace-3.0.jar"/>
     </target>
     
     <target name="ivy-download" unless="ivy.jar.exists" depends="init">
@@ -391,7 +395,7 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
                     pattern="${ivy.lib}/[artifact]-[revision].[ext]"/>
       <ivy:cachepath pathid="mvn-ant-task-classpath" conf="mvn-ant-task"/>
     </target>
-    <target name="compile" depends="ivy-retrieve,clover,build-generated">
+    <target name="compile.old" depends="ivy-retrieve,clover,build-generated">
         <javac srcdir="${java.src.dir}" destdir="${build.classes}" includeantruntime="false"
                target="${javac.target}" source="${javac.source}" debug="on">
             <classpath refid="java.classpath"/>
@@ -399,6 +403,23 @@ xmlns:maven="antlib:org.apache.maven.artifact.ant">
             <compilerarg value="-Xlint:-path"/>
         </javac>
     </target>
+
+
+    <property name="zookeeper.aspects" value="${basedir}/src/aspect" />
+	<target name="compile" depends="compile.old">
+        <!-- <aspectj:iajc srcdir="${java.src.dir}" destdir="${build.classes}"
+               target="${javac.target}" source="${javac.source}" debug="on">
+            <classpath refid="java.classpath"/>
+            <compilerarg value="-Xlint:all"/>
+            <compilerarg value="-Xlint:-path"/>
+    	</aspectj:iajc> -->
+		  <!-- <delete dir="${ivy.cache.dir}" /> -->
+		<aspectj:iajc aspectPath="${lib.dir}/xtrace-resource-tracing-1.0.jar" 
+			sourceRoots="${zookeeper.aspects}"
+			inpath="${build.classes}" destDir="${build.classes}" showWeaveInfo="true"
+			target="${javac.target}" source="${javac.source}" classpath="${toString:java.classpath}" XjoinPoints="synchronization">
+		</aspectj:iajc>
+	</target>
 
     <target name="compile-test" depends="ivy-retrieve-test,compile">
       <mkdir dir="${test.java.classes}"/>

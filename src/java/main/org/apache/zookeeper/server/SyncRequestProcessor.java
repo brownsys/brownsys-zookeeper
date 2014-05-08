@@ -24,8 +24,12 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.zookeeper.server.persistence.FileTxnLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.brown.cs.systems.resourcetracing.resources.QueueResource;
+import edu.brown.cs.systems.xtrace.XTrace;
 
 /**
  * This RequestProcessor logs requests to disk. It batches the requests to do
@@ -45,10 +49,12 @@ import org.slf4j.LoggerFactory;
  *             since it only contains committed txns.
  */
 public class SyncRequestProcessor extends Thread implements RequestProcessor {
+	
     private static final Logger LOG = LoggerFactory.getLogger(SyncRequestProcessor.class);
     private final ZooKeeperServer zks;
     private final LinkedBlockingQueue<Request> queuedRequests =
         new LinkedBlockingQueue<Request>();
+    private QueueResource queuedRequestsResource = new QueueResource("SyncRequestProcessor", 1);
     private final RequestProcessor nextProcessor;
 
     private Thread snapInProcess = null;
@@ -122,6 +128,7 @@ public class SyncRequestProcessor extends Thread implements RequestProcessor {
             // in the ensemble take a snapshot at the same time
             setRandRoll(r.nextInt(snapCount/2));
             while (true) {
+                XTrace.stop();
                 Request si = null;
                 if (toFlush.isEmpty()) {
                     si = queuedRequests.take();
@@ -136,6 +143,9 @@ public class SyncRequestProcessor extends Thread implements RequestProcessor {
                     break;
                 }
                 if (si != null) {
+                	long starttime = System.nanoTime();
+                	queuedRequestsResource.starting(si.syncrequest_enqueue_nanos, starttime);
+	                	
                     // track the number of records written to the log
                     if (zks.getZKDatabase().append(si)) {
                         logCount++;
@@ -149,6 +159,7 @@ public class SyncRequestProcessor extends Thread implements RequestProcessor {
                             } else {
                                 snapInProcess = new Thread("Snapshot Thread") {
                                         public void run() {
+                                        	XTrace.stop(); // no xtrace here
                                             try {
                                                 zks.takeSnapshot();
                                             } catch(Exception e) {
@@ -171,9 +182,18 @@ public class SyncRequestProcessor extends Thread implements RequestProcessor {
                                 ((Flushable)nextProcessor).flush();
                             }
                         }
+                		queuedRequestsResource.finished(si.syncrequest_enqueue_nanos, starttime, System.nanoTime());
                         continue;
                     }
+                    
+                    long now = System.nanoTime();
+            		queuedRequestsResource.finished(si.syncrequest_enqueue_nanos, starttime, now);
+                    si.syncrequest_enqueue_nanos = now;
+                    queuedRequestsResource.enqueue();
+                    si.sync_xtrace = XTrace.get(); // for some reason didn't get something from aspectj. 3:40am the night before paper deadline. no time to fix :P
                     toFlush.add(si);
+                    FileTxnLog.aggregator.waitingForFlush();
+                    XTrace.stop();
                     if (toFlush.size() > 1000) {
                         flush(toFlush);
                     }
@@ -196,9 +216,15 @@ public class SyncRequestProcessor extends Thread implements RequestProcessor {
         zks.getZKDatabase().commit();
         while (!toFlush.isEmpty()) {
             Request i = toFlush.remove();
+            XTrace.set(i.sync_xtrace);
+        	long starttime = System.nanoTime();
+        	queuedRequestsResource.starting(i.syncrequest_enqueue_nanos, starttime);
+        	FileTxnLog.aggregator.postFlush(i.syncrequest_enqueue_nanos, starttime, i.syncbytes);
             if (nextProcessor != null) {
                 nextProcessor.processRequest(i);
             }
+    		queuedRequestsResource.finished(i.syncrequest_enqueue_nanos, starttime, System.nanoTime());
+    		XTrace.stop();
         }
         if (nextProcessor != null && nextProcessor instanceof Flushable) {
             ((Flushable)nextProcessor).flush();
@@ -229,6 +255,8 @@ public class SyncRequestProcessor extends Thread implements RequestProcessor {
 
     public void processRequest(Request request) {
         // request.addRQRec(">sync");
+    	request.syncrequest_enqueue_nanos = System.nanoTime();
+    	queuedRequestsResource.enqueue();
         queuedRequests.add(request);
     }
 

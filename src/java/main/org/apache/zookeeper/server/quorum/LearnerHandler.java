@@ -48,6 +48,8 @@ import org.apache.zookeeper.txn.TxnHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.brown.cs.systems.xtrace.XTrace;
+
 /**
  * There will be an instance of this class created by the Leader for each
  * learner. All communication with a learner is handled by this
@@ -225,6 +227,8 @@ public class LearnerHandler extends Thread {
                     }
                 }
                 break;
+            } finally {
+            	XTrace.stop();
             }
         }
     }
