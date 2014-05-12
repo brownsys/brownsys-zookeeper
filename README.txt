@@ -1,9 +1,17 @@
 brownsys additions:
 
 RETRO:
-1. check out the retro branch
-2. build using: ant -Djavac.args="-Xlint -Xmaxwarns 1000" clean compile
-3. run with bin/zkServer
+1. Download and install aspectj from http://www.eclipse.org/aspectj/downloads.php
+Install it using, eg: java -jar aspectj-1.8.0.jar
+Then make sure the 'bin' directory of wherever you install it to is on your path.
+2. Copy the following jars from <aspectj install folder>/lib to your ant lib directory (eg. ~/.ant/lib):
+aspectjrt.jar
+aspectjtools.jar
+aspectjweaver.jar
+org.aspectj.matcher.jar
+3. Check out the retro branch
+4. Build using: ant -Djavac.args="-Xlint -Xmaxwarns 1000" clean compile
+5. Run with bin/zkServer
 Jon: Instrumentation contains some debug stuff and is more verbose than necessary.  AspectJ dependencies are in the src/java/lib folder.  I don't know how to use ANT particularly well, so for now that's where they live and require manual updating.
 
 
