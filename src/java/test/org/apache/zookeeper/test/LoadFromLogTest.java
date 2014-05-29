@@ -41,6 +41,7 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.apache.zookeeper.server.DataNode;
 import org.apache.zookeeper.server.DataTree;
+import org.apache.zookeeper.server.Request;
 import org.apache.zookeeper.server.ServerCnxnFactory;
 import org.apache.zookeeper.server.SyncRequestProcessor;
 import org.apache.zookeeper.server.ZooKeeperServer;
@@ -252,7 +253,7 @@ public class LoadFromLogTest extends ZKTestCase implements  Watcher {
         TxnHeader txnHeader = new TxnHeader(0xabcd, 0x123, 0x123,
               System.currentTimeMillis(), OpCode.create);
         Record txn = new CreateTxn("/Test", new byte[0], null, false, 1);
-        txnLog.append(txnHeader, txn);
+        txnLog.append(txnHeader, txn, Request.requestOfDeath);
         FileInputStream in = new FileInputStream(tmpDir.getPath() + "/log." +
               Long.toHexString(txnHeader.getZxid()));
         BinaryInputArchive ia  = BinaryInputArchive.getArchive(in);
