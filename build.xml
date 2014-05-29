@@ -557,6 +557,9 @@ xmlns:aspectj="antlib:org.aspectj">
             <classpath>
                 <pathelement path="${build.classes}" />
                 <pathelement path="${clover.jar}" />
+                <fileset dir="${ivy.lib}">
+                    <include name="**/*.jar" />
+                </fileset>
             </classpath>
         </java>
         <exec executable="hostname" outputproperty="host.name"/>
