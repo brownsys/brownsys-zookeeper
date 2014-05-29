@@ -414,7 +414,7 @@ xmlns:aspectj="antlib:org.aspectj">
             <compilerarg value="-Xlint:-path"/>
     	</aspectj:iajc> -->
 		  <!-- <delete dir="${ivy.cache.dir}" /> -->
-		<aspectj:iajc aspectPath="${lib.dir}/xtrace-resource-tracing-1.0.jar" 
+		<aspectj:iajc aspectPath="${ivy.lib}/xtrace-resource-tracing-1.0.jar" 
 			sourceRoots="${zookeeper.aspects}"
 			inpath="${build.classes}" destDir="${build.classes}" showWeaveInfo="true"
 			target="${javac.target}" source="${javac.source}" classpath="${toString:java.classpath}" XjoinPoints="synchronization">

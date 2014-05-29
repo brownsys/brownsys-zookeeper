@@ -74,12 +74,12 @@
                 rev="3.1" conf="releaseaudit->default"/>
 	  
     <dependency org="org.aspectj" name="aspectjrt" rev="1.7.3"/>
-    <dependency org="edu.brown.cs.systems" name="xtrace-resource-tracing" rev="1.0"/>
+    <dependency org="edu.brown.cs.systems" name="xtrace-resource-tracing" rev="1.0" changing="true"/>
     <dependency org="com.google.protobuf" name="protobuf-java" rev="2.5.0"/>
     <dependency org="com.typesafe" name="config" rev="1.2.0"/>
-    <dependency org="edu.brown.cs.systems" name="pubsub" rev="1.0"/>
-    <dependency org="edu.brown.cs.systems" name="resourcereporting" rev="1.0"/>
-    <dependency org="edu.brown.cs.systems" name="xtrace" rev="3.0"/>
+    <dependency org="edu.brown.cs.systems" name="pubsub" rev="1.0" changing="true"/>
+    <dependency org="edu.brown.cs.systems" name="resourcereporting" rev="1.0" changing="true"/>
+    <dependency org="edu.brown.cs.systems" name="xtrace" rev="3.0" changing="true"/>
     <dependency org="org.zeromq" name="jeromq" rev="0.3.3"/>
   </dependencies>
 
