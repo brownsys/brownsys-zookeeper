@@ -273,7 +273,7 @@ xmlns:aspectj="antlib:org.aspectj">
     <target name="jute" depends="init">
         <javac srcdir="${java.src.dir}" destdir="${build.classes}" includeantruntime="false"
             target="${javac.target}" source="${javac.source}"
-            includes="org/apache/jute/**" debug="on" classpath="${lib.dir}/xtrace-3.0.jar"/>
+            includes="org/apache/jute/**" debug="on" classpath="${ivy.lib}/xtrace-3.0.jar"/>
     </target>
 
     <target name="compile_jute_uptodate">
@@ -342,7 +342,7 @@ xmlns:aspectj="antlib:org.aspectj">
     
     <target name="build-generated" depends="compile_jute,version-info" >
         <javac srcdir="${src_generated.dir}" destdir="${build.classes}" includeantruntime="false"
-            target="${javac.target}" source="${javac.source}" debug="on" classpath="${lib.dir}/xtrace-3.0.jar"/>
+            target="${javac.target}" source="${javac.source}" debug="on" classpath="${ivy.lib}/xtrace-3.0.jar"/>
     </target>
     
     <target name="ivy-download" unless="ivy.jar.exists" depends="init">
@@ -407,16 +407,9 @@ xmlns:aspectj="antlib:org.aspectj">
 
     <property name="zookeeper.aspects" value="${basedir}/src/aspect" />
 	<target name="compile" depends="compile.old">
-        <!-- <aspectj:iajc srcdir="${java.src.dir}" destdir="${build.classes}"
-               target="${javac.target}" source="${javac.source}" debug="on">
-            <classpath refid="java.classpath"/>
-            <compilerarg value="-Xlint:all"/>
-            <compilerarg value="-Xlint:-path"/>
-    	</aspectj:iajc> -->
-		  <!-- <delete dir="${ivy.cache.dir}" /> -->
 		<aspectj:iajc aspectPath="${ivy.lib}/xtrace-resource-tracing-1.0.jar" 
 			sourceRoots="${zookeeper.aspects}"
-			inpath="${build.classes}" destDir="${build.classes}" showWeaveInfo="true"
+			inpath="${build.classes}" destDir="${build.classes}"
 			target="${javac.target}" source="${javac.source}" classpath="${toString:java.classpath}" XjoinPoints="synchronization">
 		</aspectj:iajc>
 	</target>
