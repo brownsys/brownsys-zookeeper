@@ -14,7 +14,9 @@ REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 REM See the License for the specific language governing permissions and
 REM limitations under the License.
 
-set ZOOCFGDIR=%~dp0%..\conf
+if not defined ZOOCFGDIR (
+  set ZOOCFGDIR=%~dp0%..\conf
+)
 set ZOO_LOG_DIR=%~dp0%..
 set ZOO_LOG4J_PROP=INFO,CONSOLE
 
