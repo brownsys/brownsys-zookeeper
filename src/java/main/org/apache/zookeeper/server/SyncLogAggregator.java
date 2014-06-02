@@ -39,11 +39,12 @@ public class SyncLogAggregator extends ResourceAggregator {
 		this.starting(Operation.FLUSH, XTrace.getTenantClass());
 	}
 	
-	public void postFlush(long start, long end, long bytes) {
+	public long postFlush(long start, long end, long bytes) {
 		long sync_work = previous_sync_duration * bytes / previous_total_written;
 		this.finished(Operation.FLUSH, XTrace.getTenantClass(), sync_work, end-start);
 //		if (logger.valid())
 //			logger.log(String.format("Flush complete, waited %d ms for a flush, responsible for %.1f%% of flush", (end-start)/1000000, (100*bytes/(double)previous_total_written)));
+		return sync_work;
 	}
 	
 	public void synced(long duration_nanos) {

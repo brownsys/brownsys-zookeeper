@@ -27,13 +27,15 @@ public aspect RequestProcessorInstrumentation {
 	declare parents: org.apache.zookeeper.ClientCnxn.WatcherSetEventPair+ implements Tracked;
 
 	public Tracked Tracked.resume() {
-		if (this.xtrace!=null)
+		if (this.xtrace!=null) {
 			XTrace.join(this.xtrace);
+			//this.xtrace=null;
+		}
 		return this;
 	}
 	
 	public Tracked Tracked.save() {
-		if (XTrace.active() && this.xtrace==null)
+		if (XTrace.active()) // && this.xtrace==null)
 			this.xtrace = XTrace.get();
 		return this;
 	}

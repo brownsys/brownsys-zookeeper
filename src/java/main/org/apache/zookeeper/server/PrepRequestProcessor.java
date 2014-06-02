@@ -95,7 +95,8 @@ public class PrepRequestProcessor extends Thread implements RequestProcessor {
     private static  boolean failCreate = false;
 
     LinkedBlockingQueue<Request> submittedRequests = new LinkedBlockingQueue<Request>();
-    QueueResource submittedRequestsResource = new QueueResource("PrepRequestProcessor", 1);
+    QueueResource submittedRequestsResource = new QueueResource("PrepRP", 1);
+    public static QueueResource zkEditPipelineResource = new QueueResource("ZKEditPipeline", 1);
 
     RequestProcessor nextProcessor;
 
@@ -763,8 +764,12 @@ public class PrepRequestProcessor extends Thread implements RequestProcessor {
 
     public void processRequest(Request request) {
         // request.addRQRec(">prep="+zks.outstandingChanges.size());
+    	
+    	// Retro
     	request.preprequest_enqueue_nanos = System.nanoTime();
     	submittedRequestsResource.enqueue();
+    	zkEditPipelineResource.starting(request.preprequest_enqueue_nanos, request.preprequest_enqueue_nanos);
+    	
         submittedRequests.add(request);
     }
 

@@ -54,7 +54,7 @@ public class SyncRequestProcessor extends Thread implements RequestProcessor {
     private final ZooKeeperServer zks;
     private final LinkedBlockingQueue<Request> queuedRequests =
         new LinkedBlockingQueue<Request>();
-    private QueueResource queuedRequestsResource = new QueueResource("SyncRequestProcessor", 1);
+    private QueueResource queuedRequestsResource = new QueueResource("SyncRP", 1);
     private final RequestProcessor nextProcessor;
 
     private Thread snapInProcess = null;
@@ -216,13 +216,19 @@ public class SyncRequestProcessor extends Thread implements RequestProcessor {
         zks.getZKDatabase().commit();
         while (!toFlush.isEmpty()) {
             Request i = toFlush.remove();
+            
+            // Retro
             XTrace.set(i.sync_xtrace);
         	long starttime = System.nanoTime();
-        	queuedRequestsResource.starting(i.syncrequest_enqueue_nanos, starttime);
-        	FileTxnLog.aggregator.postFlush(i.syncrequest_enqueue_nanos, starttime, i.syncbytes);
+        	// this is a hack ... need a nicer way to do this
+        	long syncTimeOfThisRequest = FileTxnLog.aggregator.postFlush(i.syncrequest_enqueue_nanos, starttime, i.syncbytes);
+        	queuedRequestsResource.starting(i.syncrequest_enqueue_nanos, starttime - syncTimeOfThisRequest); // add the sync time to this duration
+        	
             if (nextProcessor != null) {
                 nextProcessor.processRequest(i);
             }
+            
+            // Retro
     		queuedRequestsResource.finished(i.syncrequest_enqueue_nanos, starttime, System.nanoTime());
     		XTrace.stop();
         }

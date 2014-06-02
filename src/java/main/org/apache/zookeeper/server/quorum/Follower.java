@@ -28,6 +28,8 @@ import org.apache.zookeeper.server.util.SerializeUtils;
 import org.apache.zookeeper.server.util.ZxidUtils;
 import org.apache.zookeeper.txn.TxnHeader;
 
+import edu.brown.cs.systems.xtrace.XTrace;
+
 /**
  * This class has the control logic for the Follower.
  */
@@ -36,7 +38,7 @@ public class Follower extends Learner{
     private long lastQueued;
     // This is the same object as this.zk, but we cache the downcast op
     final FollowerZooKeeperServer fzk;
-    
+
     Follower(QuorumPeer self,FollowerZooKeeperServer zk) {
         this.self = self;
         this.zk=zk;
@@ -82,6 +84,7 @@ public class Follower extends Learner{
                 syncWithLeader(newEpochZxid);                
                 QuorumPacket qp = new QuorumPacket();
                 while (self.isRunning()) {
+                    XTrace.stop();
                     readPacket(qp);
                     processPacket(qp);
                 }
@@ -98,6 +101,7 @@ public class Follower extends Learner{
             }
         } finally {
             zk.unregisterJMX((Learner)this);
+            XTrace.stop();
         }
     }
 

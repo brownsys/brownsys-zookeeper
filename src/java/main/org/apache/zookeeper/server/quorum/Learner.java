@@ -65,7 +65,9 @@ public class Learner {
     protected BufferedOutputStream bufferedOutput;
     
     protected Socket sock;
-    
+
+	private static final edu.brown.cs.systems.xtrace.XTrace.Logger XTRACE = edu.brown.cs.systems.xtrace.XTrace.getLogger("Learner");
+
     /**
      * Socket getter
      * @return 
@@ -134,6 +136,7 @@ public class Learner {
         synchronized (leaderOs) {
             if (pp != null) {
                 leaderOs.writeRecord(pp, "packet");
+                XTRACE.log("sent QuorumPacket to leader: " + LearnerHandler.packetToString(pp));
             }
             if (flush) {
                 bufferedOutput.flush();
@@ -151,6 +154,7 @@ public class Learner {
     void readPacket(QuorumPacket pp) throws IOException {
         synchronized (leaderIs) {
             leaderIs.readRecord(pp, "packet");
+            XTRACE.log("processing Quorum packet = " + LearnerHandler.packetToString(pp));
         }
         long traceMask = ZooTrace.SERVER_PACKET_TRACE_MASK;
         if (pp.getType() == Leader.PING) {

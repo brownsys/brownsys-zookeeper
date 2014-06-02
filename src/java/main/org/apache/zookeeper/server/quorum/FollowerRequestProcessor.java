@@ -22,11 +22,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.apache.zookeeper.ZooDefs.OpCode;
 import org.apache.zookeeper.server.RequestProcessor;
 import org.apache.zookeeper.server.Request;
 import org.apache.zookeeper.server.ZooTrace;
+
+import edu.brown.cs.systems.resourcetracing.resources.QueueResource;
+import edu.brown.cs.systems.xtrace.XTrace;
 
 /**
  * This RequestProcessor forwards any requests that modify the state of the
@@ -44,6 +46,9 @@ public class FollowerRequestProcessor extends Thread implements
 
     boolean finished = false;
 
+    // Retro
+    private QueueResource queuedRequestsResource = new QueueResource("FollowerRP", 1);
+
     public FollowerRequestProcessor(FollowerZooKeeperServer zks,
             RequestProcessor nextProcessor) {
         super("FollowerRequestProcessor:" + zks.getServerId());
@@ -56,6 +61,11 @@ public class FollowerRequestProcessor extends Thread implements
         try {
             while (!finished) {
                 Request request = queuedRequests.take();
+                
+                // Retro
+                long start = System.nanoTime();
+                queuedRequestsResource.starting(request.followerRP_enqueue_nanos, start);
+                
                 if (LOG.isTraceEnabled()) {
                     ZooTrace.logRequest(LOG, ZooTrace.CLIENT_REQUEST_TRACE_MASK,
                             'F', request, "");
@@ -88,6 +98,10 @@ public class FollowerRequestProcessor extends Thread implements
                     zks.getFollower().request(request);
                     break;
                 }
+                
+                // Retro
+                queuedRequestsResource.finished(request.followerRP_enqueue_nanos, start, System.nanoTime());
+                XTrace.stop();
             }
         } catch (Exception e) {
             LOG.error("Unexpected exception causing exit", e);
@@ -97,7 +111,11 @@ public class FollowerRequestProcessor extends Thread implements
 
     public void processRequest(Request request) {
         if (!finished) {
-            queuedRequests.add(request);
+        	// Retro
+        	request.followerRP_enqueue_nanos = System.nanoTime();
+        	queuedRequestsResource.enqueue();
+
+        	queuedRequests.add(request);
         }
     }
 

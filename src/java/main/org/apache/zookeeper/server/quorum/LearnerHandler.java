@@ -57,6 +57,7 @@ import edu.brown.cs.systems.xtrace.XTrace;
  */
 public class LearnerHandler extends Thread {
     private static final Logger LOG = LoggerFactory.getLogger(LearnerHandler.class);
+	private static final edu.brown.cs.systems.xtrace.XTrace.Logger XTRACE = edu.brown.cs.systems.xtrace.XTrace.getLogger("LearnerHandler");
 
     protected final Socket sock;    
 
@@ -214,6 +215,7 @@ public class LearnerHandler extends Thread {
                     ZooTrace.logQuorumPacket(LOG, traceMask, 'o', p);
                 }
                 oa.writeRecord(p, "packet");
+                XTRACE.log("sent QuorumPacket: "+packetToString(p));
             } catch (IOException e) {
                 if (!sock.isClosed()) {
                     LOG.warn("Unexpected exception at " + this, e);
@@ -234,7 +236,7 @@ public class LearnerHandler extends Thread {
     }
 
     static public String packetToString(QuorumPacket p) {
-        if (true)
+        if (false)
             return null;
         String type = null;
         String mess = null;
@@ -546,8 +548,10 @@ public class LearnerHandler extends Thread {
             queuedPackets.add(new QuorumPacket(Leader.UPTODATE, -1, null, null));
 
             while (true) {
+            	XTrace.stop();
                 qp = new QuorumPacket();
                 ia.readRecord(qp, "packet");
+                XTRACE.log("processing QuorumPacket: "+packetToString(qp));
 
                 long traceMask = ZooTrace.SERVER_PACKET_TRACE_MASK;
                 if (qp.getType() == Leader.PING) {

@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.jute.BinaryOutputArchive;
+import org.apache.zookeeper.server.PrepRequestProcessor;
 import org.apache.zookeeper.server.ZooKeeperServer;
 import org.apache.zookeeper.server.FinalRequestProcessor;
 import org.apache.zookeeper.server.Request;
@@ -595,6 +596,11 @@ public class Leader {
             if (p.request == null) {
                 LOG.warn("Going to commmit null request for proposal: {}", p);
             }
+            
+            // Retro: this is where we know we're done with the request 
+            // (rest will happen either on leader or follower who submitted the request)
+            PrepRequestProcessor.zkEditPipelineResource.finished(p.request.preprequest_enqueue_nanos, p.request.preprequest_enqueue_nanos, System.nanoTime());
+            
             commit(zxid);
             inform(p);
             zk.commitProcessor.commit(p.request);

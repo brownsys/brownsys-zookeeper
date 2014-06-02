@@ -65,8 +65,13 @@ public class Request {
 
     public final int type;
     
+    // Retro
     public long preprequest_enqueue_nanos;
     public long syncrequest_enqueue_nanos;
+    public long commitRP_enqueue_nanos;
+//    public long commitRP_committed_enqueue_nanos;
+//    public long commitRP_toProcess_enqueue_nanos;
+    public long followerRP_enqueue_nanos;
     public long syncbytes = 0;
     public Context sync_xtrace = null;
 
