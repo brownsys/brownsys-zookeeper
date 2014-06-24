@@ -10,7 +10,7 @@ aspectjtools.jar
 aspectjweaver.jar
 org.aspectj.matcher.jar
 3. Check out the retro branch
-4. Build using: ant -Djavac.args="-Xlint -Xmaxwarns 1000" clean compile
+4. Build using: ant -Djavac.args="-Xlint -Xmaxwarns 1000" clean jar
 5. Run with bin/zkServer
 Jon: Instrumentation contains some debug stuff and is more verbose than necessary.  AspectJ dependencies are in the src/java/lib folder.  I don't know how to use ANT particularly well, so for now that's where they live and require manual updating.
 
