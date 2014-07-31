@@ -1,19 +1,17 @@
 package org.apache.zookeeper.aspects;
 
 import java.util.Collection;
-import java.util.concurrent.BlockingQueue;
 
 import org.apache.zookeeper.server.Request;
 import org.apache.zookeeper.server.RequestProcessor;
 
-import edu.brown.cs.systems.resourcetracing.Proxy;
-import edu.brown.cs.systems.resourcetracing.ResourceTracing;
+import edu.brown.cs.systems.resourcetracing.logging.ResourceLogging;
 import edu.brown.cs.systems.xtrace.Context;
 import edu.brown.cs.systems.xtrace.XTrace;
 
 public aspect RequestProcessorInstrumentation {
 	
-	private static final ResourceTracing.Logger XTRACE = ResourceTracing.getXTraceLogger(RequestProcessorInstrumentation.class);
+	private static final ResourceLogging.Logger XTRACE = ResourceLogging.getXTraceLogger(RequestProcessorInstrumentation.class);
 	
 	public interface Tracked {
 		public Tracked save();
