@@ -584,9 +584,18 @@ xmlns:aspectj="antlib:org.aspectj">
                 <attribute name="Export-Package" value='org.apache.zookeeper;version="${version}",org.apache.zookeeper.client;version="${version}",org.apache.zookeeper.data;version="${version}",org.apache.zookeeper.version;version="${version}",org.apache.zookeeper.server;version="${version}",org.apache.zookeeper.server.auth;version="${version}",org.apache.zookeeper.server.persistence;version="${version}",org.apache.zookeeper.server.quorum;version="${version}",org.apache.zookeeper.common;version="${version}"'/>
             </manifest>
         </jar>
-<exec executable="cmd.exe">
+<exec executable="cmd.exe" osfamily="windows">
     <arg value="/c"/>
     <arg value="mvn.bat"/>
+    <arg value="install:install-file"/>
+    <arg value="-Dfile=${build.dir}/${final.name}.jar"/>
+    <arg value ="-DgroupId=org.apache.zookeeper"/>
+    <arg value="-DartifactId=zookeeper"/>
+    <arg value="-Dversion=3.4.6"/>
+    <arg value="-Dpackaging=jar"/>
+    <arg value="-DgeneratePOM=true"/>       
+</exec>   
+<exec executable="mvn" osfamily="unix">
     <arg value="install:install-file"/>
     <arg value="-Dfile=${build.dir}/${final.name}.jar"/>
     <arg value ="-DgroupId=org.apache.zookeeper"/>
