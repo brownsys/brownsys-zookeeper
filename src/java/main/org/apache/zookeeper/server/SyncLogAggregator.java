@@ -1,15 +1,17 @@
 package org.apache.zookeeper.server;
 
+import com.typesafe.config.ConfigFactory;
+
 import edu.brown.cs.systems.resourcereporting.Resource.Operation;
 import edu.brown.cs.systems.resourcereporting.Resource.Type;
-import edu.brown.cs.systems.resourcereporting.ZmqReporter;
 import edu.brown.cs.systems.resourcereporting.aggregators.ResourceAggregator;
+import edu.brown.cs.systems.resourcereporting.reporters.ZmqReporter;
 import edu.brown.cs.systems.xtrace.XTrace;
 
 public class SyncLogAggregator extends ResourceAggregator {
 	
 	private final XTrace.Logger logger;
-	private static final ZmqReporter reporter = new ZmqReporter(1000);
+	private static final ZmqReporter reporter = new ZmqReporter(ConfigFactory.load());
 	
 	public SyncLogAggregator(Class<?> cls, String id) {
 		super(Type.HDFSBACKGROUND, id);
